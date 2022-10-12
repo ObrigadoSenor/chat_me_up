@@ -1,0 +1,7 @@
+{
+  "name": "chat_me_up",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "Johan Sjoberg <license@obrigadosenor.com>",
+  "license": "MIT"
+}
