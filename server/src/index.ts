@@ -1,58 +1,59 @@
-import "reflect-metadata";
-import { ApolloServer } from "apollo-server-express";
-import express from "express";
-import { buildSchema } from "type-graphql";
-import { createServer } from "http";
 import {
   ApolloServerPluginDrainHttpServer,
   ApolloServerPluginLandingPageLocalDefault,
 } from "apollo-server-core";
-import { makeExecutableSchema } from "@graphql-tools/schema";
-import { WebSocketServer } from "ws";
-import { useServer } from "graphql-ws/lib/use/ws";
+import { ApolloServer } from "apollo-server-express";
 import cors from "cors";
 import dotenv from "dotenv";
-import { ChatResolver } from "./resolvers/chat";
+import express from "express";
+import { useServer } from "graphql-ws/lib/use/ws";
+import { createServer } from "http";
+import "reflect-metadata";
+import { buildSchema } from "type-graphql";
+import { WebSocketServer } from "ws";
+import { MessageResolver } from "./resolvers/message";
+import { RoomResolver } from "./resolvers/room";
+import path from "path";
+import { mongo } from "./mongo";
 
 dotenv.config();
 
-// const corsOptions = {
-//   origin: "http://localhost:3000",
-//   credentials: false,
-// };
-
 const main = async () => {
   const app = express();
+
+  app.use(
+    "/graphql",
+    cors<cors.CorsRequest>({
+      origin: ["http://localhost:3000"],
+      credentials: false,
+    })
+  );
+
   const httpServer = createServer(app);
 
   const schema = await buildSchema({
-    resolvers: [ChatResolver],
+    resolvers: [MessageResolver, RoomResolver],
+    emitSchemaFile: path.resolve(
+      __dirname,
+      "../../../client/__generated_types__/server.gql"
+    ),
+
     validate: false,
   });
-  // Creating the WebSocket server
+
   const wsServer = new WebSocketServer({
-    // This is the `httpServer` we created in a previous step.
     server: httpServer,
-    // Pass a different path here if your ApolloServer serves at
-    // a different path.
-    path: "/graphql",
+    path: "/subscriptions",
   });
 
-  // Hand in the schema we just created and have the
-  // WebSocketServer start listening.
   const serverCleanup = useServer({ schema }, wsServer);
-
-  // app.use(cors(corsOptions));
 
   const apolloServer = new ApolloServer({
     schema,
     csrfPrevention: true,
     cache: "bounded",
     plugins: [
-      // Proper shutdown for the HTTP server.
       ApolloServerPluginDrainHttpServer({ httpServer }),
-
-      // Proper shutdown for the WebSocket server.
       {
         async serverWillStart() {
           return {
@@ -64,17 +65,8 @@ const main = async () => {
       },
       ApolloServerPluginLandingPageLocalDefault({ embed: true }),
     ],
-    // subscriptions: {
-    //   path: "/subscriptions",
-    //   onConnect: () => {
-    //     console.log("Client connected for subscriptions");
-    //   },
-    //   onDisconnect: () => {
-    //     console.log("Client disconnected from subscriptions");
-    //   },
-    // },
   });
-
+  await mongo();
   await apolloServer.start();
 
   apolloServer.applyMiddleware({
