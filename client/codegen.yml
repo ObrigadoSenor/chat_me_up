@@ -1,0 +1,7 @@
+schema: './__generated_types__/server.gql' # GraphQL types (input file)
+generates:
+  ./__generated_types__/types.ts: # Typescript types (output generated file)
+    plugins:
+      - 'typescript'
+    config:
+      skipTypename: true

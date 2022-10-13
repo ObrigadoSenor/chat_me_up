@@ -31,6 +31,15 @@ export class RoomResolver {
     return room;
   }
 
+  @Query(() => RoomType)
+  async joinRoom(@Arg("_id") _id: idType): Promise<RoomsModelType | Error> {
+    const room = await Rooms.findOne<RoomsModelType>({ _id });
+    if (!room) {
+      return { code: 500, message: `No room with name ${_id}` };
+    }
+    return room;
+  }
+
   @Mutation(() => RoomType)
   async sendRoom(
     @PubSub("OnNewRoom") publish: Publisher<RoomsModelType>,
@@ -62,12 +71,22 @@ export class RoomResolver {
     return room;
   }
 
-  @Query(() => RoomType)
-  async joinRoom(@Arg("_id") _id: idType): Promise<RoomsModelType | Error> {
-    const room = await Rooms.findOne<RoomsModelType>({ _id });
+  @Mutation(() => RoomType)
+  async deleteRoom(
+    @PubSub("OnDeleteRoom") publish: Publisher<RoomsModelType>,
+    @Arg("_id") _id: idType
+  ): Promise<RoomsModelType | Error> {
+    const room = await Rooms.findOneAndRemove<RoomsModelType>(
+      { _id },
+      { returnDocument: "after" }
+    );
     if (!room) {
-      return { code: 500, message: `No room with name ${_id}` };
+      return { code: 500, message: `No room was deleted` };
     }
+    await Messages.deleteOne({ roomId: room._id });
+    await Members.deleteOne({ roomId: room._id });
+
+    await publish(room);
     return room;
   }
 
@@ -76,6 +95,15 @@ export class RoomResolver {
   })
   roomSent(@Root() props: HydratedDocument<RoomType>): RoomType {
     console.log("on new room sub: ", props);
+
+    return props;
+  }
+
+  @Subscription({
+    topics: "OnDeleteRoom",
+  })
+  roomDeleted(@Root() props: HydratedDocument<RoomType>): RoomType {
+    console.log("on deleted room sub: ", props);
 
     return props;
   }
