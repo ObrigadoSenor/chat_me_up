@@ -29,8 +29,8 @@ export const SendMessage = ({ _id }: SendMessageProps) => {
 
   return (
     <div>
-      <input type="text" id="name" value={name} onChange={(e) => setName(e.target.value)}></input>
-      <input type="text" id="message" value={message} onChange={(e) => setMessage(e.target.value)}></input>
+      <input type="text" value={name} onChange={(e) => setName(e.target.value)}></input>
+      <input type="text" value={message} onChange={(e) => setMessage(e.target.value)}></input>
       <button onClick={handleSend}>Create message</button>
     </div>
   );

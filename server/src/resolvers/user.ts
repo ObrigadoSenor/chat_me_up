@@ -9,14 +9,17 @@ import {
   Root,
   Subscription,
 } from "type-graphql";
+import { signUpUser } from "../axios/user";
 
 import { Error } from "../entities/error";
 
-import { UserType } from "../entities/user";
-import { User, UserModelType } from "../models/user";
+import { UserAddType, UserBasicType, UserType } from "../entities/user";
+import { User, UserBasicModelType, UserModelType } from "../models/user";
 
 type idType = UserType["_id"];
-type usernameType = UserType["username"];
+type nameType = UserAddType["name"];
+type emailType = UserAddType["email"];
+type passwordType = UserAddType["password"];
 
 @Resolver()
 export class UserResolver {
@@ -40,12 +43,14 @@ export class UserResolver {
 
   @Mutation(() => UserType)
   async addUser(
-    @PubSub("OnNewUser") publish: Publisher<UserModelType>,
-    @Arg("username") username: usernameType
-  ): Promise<UserModelType | Error> {
-    const user = (await new User({
-      username,
-    }).save()) as UserModelType;
+    @PubSub("OnNewUser") publish: Publisher<UserBasicModelType>,
+    @Arg("name") name: nameType,
+    @Arg("email") email: emailType,
+    @Arg("password") password: passwordType,
+    @Arg("confirmPassword") confirmPassword: passwordType
+  ): Promise<UserBasicModelType | Error> {
+    const user = await signUpUser({ name, email, password, confirmPassword });
+    console.log("user", user);
 
     if (!user) {
       return { code: 500, message: `Could'nt add user` };
@@ -75,7 +80,9 @@ export class UserResolver {
   @Subscription({
     topics: "OnNewUser",
   })
-  userAdded(@Root() props: HydratedDocument<UserType>): UserType {
+  userAdded(@Root() props: HydratedDocument<UserBasicType>): UserBasicType {
+    console.log("user sub: ", props);
+
     return props;
   }
 

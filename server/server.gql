@@ -22,7 +22,7 @@ type MessagesType {
 
 type Mutation {
   addMember(_id: String!, _userId: String!): MemberType!
-  addUser(username: String!): UserType!
+  addUser(confirmPassword: String!, email: String!, name: String!, password: String!): UserType!
   deleteRoom(_id: String!): RoomType!
   deleteUser(_id: String!): UserType!
   removeMember(_id: String!, _userId: String!): MemberType!
@@ -52,11 +52,22 @@ type Subscription {
   messageSent: MessageType!
   roomDeleted: RoomType!
   roomSent: RoomType!
-  userAdded: UserType!
+  userAdded: UserBasicType!
   userDeleted: UserType!
+}
+
+type UserBasicType {
+  _id: String!
+  email: String!
+  name: String!
 }
 
 type UserType {
   _id: String!
-  username: String!
+  date: String!
+  email: String!
+  hash: String!
+  name: String!
+  salt: String!
+  token: String!
 }
