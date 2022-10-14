@@ -5,7 +5,7 @@ export const mongo = async () => {
   const uri = env.MONGO_DB_URI || "";
 
   connection.on("connected", () =>
-    console.log("Mongoose is connected successfully ssss")
+    console.log("Mongoose is connected successfully")
   );
   connection.on("disconnected", () =>
     console.log("Mongoose is disconnected successfully")

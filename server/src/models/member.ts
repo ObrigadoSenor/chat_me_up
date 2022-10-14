@@ -1,8 +1,8 @@
 import { Document, model, Schema } from "mongoose";
-import { MemberType } from "../../__generated_types__/types";
+import { MembersType, MemberType } from "../entities/member";
 
 const MemberSchema = new Schema({
-  username: {
+  _userId: {
     type: String,
     required: true,
   },
@@ -16,5 +16,6 @@ export const MembersSchema = new Schema({
   },
 });
 
-export type MembersModelType = MemberType | Document;
+export type MemberModelType = MemberType | Document;
+export type MembersModelType = MembersType | Document;
 export const Members = model<MembersModelType>("Members", MembersSchema);

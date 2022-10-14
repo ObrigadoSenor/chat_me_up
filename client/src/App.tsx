@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import styled from 'styled-components';
-import GlobalStyle from './globalStyle';
 import { Rooms } from './components/rooms';
+import GlobalStyle from './globalStyle';
 
 const Container = styled.div`
   display: flex;

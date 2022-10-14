@@ -8,13 +8,15 @@ import dotenv from "dotenv";
 import express from "express";
 import { useServer } from "graphql-ws/lib/use/ws";
 import { createServer } from "http";
+import path from "path";
 import "reflect-metadata";
 import { buildSchema } from "type-graphql";
 import { WebSocketServer } from "ws";
+import { mongo } from "./mongo";
+import { MemberResolver } from "./resolvers/member";
 import { MessageResolver } from "./resolvers/message";
 import { RoomResolver } from "./resolvers/room";
-import path from "path";
-import { mongo } from "./mongo";
+import { UserResolver } from "./resolvers/user";
 
 dotenv.config();
 
@@ -32,12 +34,8 @@ const main = async () => {
   const httpServer = createServer(app);
 
   const schema = await buildSchema({
-    resolvers: [MessageResolver, RoomResolver],
-    emitSchemaFile: path.resolve(
-      __dirname,
-      "../../../client/__generated_types__/server.gql"
-    ),
-
+    resolvers: [MessageResolver, RoomResolver, UserResolver, MemberResolver],
+    emitSchemaFile: path.resolve("./server.gql"),
     validate: false,
   });
 

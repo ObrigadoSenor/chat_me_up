@@ -1,5 +1,5 @@
 import { Document, model, Schema } from "mongoose";
-import { RoomType } from "../../__generated_types__/types";
+import { RoomType } from "../entities/room";
 
 const RoomSchema = new Schema({
   name: {
