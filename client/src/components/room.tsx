@@ -1,5 +1,6 @@
 import { gql, useMutation, useQuery } from '@apollo/client';
 import { RoomType } from '../../__generated_types__/types';
+import { Members } from './members';
 import { Messages } from './messages';
 import { SendMessage } from './sendMessage';
 
@@ -44,6 +45,7 @@ export const Room = ({ _id }: RoomProps) => {
     <div>
       <h4>{data?.joinRoom?.name}</h4>
       <button onClick={() => handleDelete()}>Delete</button>
+      <Members _id={_id} />
       <SendMessage _id={_id} />
       <Messages _id={_id} />
     </div>

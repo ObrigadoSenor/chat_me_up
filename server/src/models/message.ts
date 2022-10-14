@@ -1,5 +1,5 @@
 import { Document, model, Schema } from "mongoose";
-import { MessagesType } from "../../__generated_types__/types";
+import { MessagesType } from "../entities/message";
 
 const MessageSchema = new Schema({
   message: {

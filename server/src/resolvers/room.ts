@@ -94,8 +94,6 @@ export class RoomResolver {
     topics: "OnNewRoom",
   })
   roomSent(@Root() props: HydratedDocument<RoomType>): RoomType {
-    console.log("on new room sub: ", props);
-
     return props;
   }
 
@@ -103,8 +101,6 @@ export class RoomResolver {
     topics: "OnDeleteRoom",
   })
   roomDeleted(@Root() props: HydratedDocument<RoomType>): RoomType {
-    console.log("on deleted room sub: ", props);
-
     return props;
   }
 }

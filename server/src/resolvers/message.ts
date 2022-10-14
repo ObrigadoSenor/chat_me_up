@@ -63,7 +63,6 @@ export class MessageResolver {
     topics: "OnNewMessage",
   })
   messageSent(@Root() props: HydratedDocument<MessageType>): MessageType {
-    console.log("on new message sub: ", props);
     return props;
   }
 }

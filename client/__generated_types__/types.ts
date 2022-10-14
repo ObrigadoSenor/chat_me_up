@@ -14,7 +14,7 @@ export type Scalars = {
 
 export type MemberType = {
   _id: Scalars['String'];
-  username: Scalars['String'];
+  _userId: Scalars['String'];
 };
 
 export type MessageType = {
@@ -30,8 +30,40 @@ export type MessagesType = {
 };
 
 export type Mutation = {
+  addMember: MemberType;
+  addUser: UserType;
+  deleteRoom: RoomType;
+  deleteUser: UserType;
+  removeMember: MemberType;
   sendMessage: MessageType;
   sendRoom: RoomType;
+};
+
+
+export type MutationAddMemberArgs = {
+  _id: Scalars['String'];
+  _userId: Scalars['String'];
+};
+
+
+export type MutationAddUserArgs = {
+  username: Scalars['String'];
+};
+
+
+export type MutationDeleteRoomArgs = {
+  _id: Scalars['String'];
+};
+
+
+export type MutationDeleteUserArgs = {
+  _id: Scalars['String'];
+};
+
+
+export type MutationRemoveMemberArgs = {
+  _id: Scalars['String'];
+  _userId: Scalars['String'];
 };
 
 
@@ -47,10 +79,17 @@ export type MutationSendRoomArgs = {
 };
 
 export type Query = {
-  getMessages: Array<MessagesType>;
-  getMessagess: Array<MemberType>;
+  getMembers: Array<MemberType>;
+  getMessages: MessagesType;
   getRooms: Array<RoomType>;
+  getUser: UserType;
+  getUsers: Array<UserType>;
   joinRoom: RoomType;
+};
+
+
+export type QueryGetMembersArgs = {
+  _id: Scalars['String'];
 };
 
 
@@ -59,7 +98,7 @@ export type QueryGetMessagesArgs = {
 };
 
 
-export type QueryGetMessagessArgs = {
+export type QueryGetUserArgs = {
   _id: Scalars['String'];
 };
 
@@ -76,6 +115,16 @@ export type RoomType = {
 };
 
 export type Subscription = {
+  memberAdded: MemberType;
+  memberRemoved: MemberType;
   messageSent: MessageType;
+  roomDeleted: RoomType;
   roomSent: RoomType;
+  userAdded: UserType;
+  userDeleted: UserType;
+};
+
+export type UserType = {
+  _id: Scalars['String'];
+  username: Scalars['String'];
 };

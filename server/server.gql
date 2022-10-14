@@ -3,6 +3,11 @@
 # !!!   DO NOT MODIFY THIS FILE BY YOURSELF   !!!
 # -----------------------------------------------
 
+type MemberType {
+  _id: String!
+  _userId: String!
+}
+
 type MessageType {
   _id: String!
   message: String!
@@ -16,14 +21,21 @@ type MessagesType {
 }
 
 type Mutation {
+  addMember(_id: String!, _userId: String!): MemberType!
+  addUser(username: String!): UserType!
   deleteRoom(_id: String!): RoomType!
+  deleteUser(_id: String!): UserType!
+  removeMember(_id: String!, _userId: String!): MemberType!
   sendMessage(_id: String!, message: String!, name: String!): MessageType!
   sendRoom(name: String!): RoomType!
 }
 
 type Query {
+  getMembers(_id: String!): [MemberType!]!
   getMessages(_id: String!): MessagesType!
   getRooms: [RoomType!]!
+  getUser(_id: String!): UserType!
+  getUsers: [UserType!]!
   joinRoom(_id: String!): RoomType!
 }
 
@@ -35,7 +47,16 @@ type RoomType {
 }
 
 type Subscription {
+  memberAdded: MemberType!
+  memberRemoved: MemberType!
   messageSent: MessageType!
   roomDeleted: RoomType!
   roomSent: RoomType!
+  userAdded: UserType!
+  userDeleted: UserType!
+}
+
+type UserType {
+  _id: String!
+  username: String!
 }

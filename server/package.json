@@ -9,7 +9,7 @@
     "dev": "nodemon dist/src/index.js",
     "build": "tsc",
     "start": "node dist/src/index.js",
-    "dev-start": "concurrently --kill-others \"yarn watch\" \"yarn dev\"",
+    "dev-start": "concurrently --kill-others \"yarn watch\" \"yarn dev\" \"yarn gql-generate-watch\"",
     "gql-generate": "graphql-codegen --config './codegen.yml'",
     "gql-generate-watch": "yarn gql-generate --watch",
     "generate-types": "yarn build && yarn gql-generate"
