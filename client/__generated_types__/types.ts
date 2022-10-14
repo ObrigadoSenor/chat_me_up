@@ -39,40 +39,36 @@ export type Mutation = {
   sendRoom: RoomType;
 };
 
-
 export type MutationAddMemberArgs = {
   _id: Scalars['String'];
   _userId: Scalars['String'];
 };
 
-
 export type MutationAddUserArgs = {
-  username: Scalars['String'];
+  confirmPassword: Scalars['String'];
+  email: Scalars['String'];
+  name: Scalars['String'];
+  password: Scalars['String'];
 };
-
 
 export type MutationDeleteRoomArgs = {
   _id: Scalars['String'];
 };
 
-
 export type MutationDeleteUserArgs = {
   _id: Scalars['String'];
 };
-
 
 export type MutationRemoveMemberArgs = {
   _id: Scalars['String'];
   _userId: Scalars['String'];
 };
 
-
 export type MutationSendMessageArgs = {
   _id: Scalars['String'];
   message: Scalars['String'];
   name: Scalars['String'];
 };
-
 
 export type MutationSendRoomArgs = {
   name: Scalars['String'];
@@ -87,21 +83,17 @@ export type Query = {
   joinRoom: RoomType;
 };
 
-
 export type QueryGetMembersArgs = {
   _id: Scalars['String'];
 };
-
 
 export type QueryGetMessagesArgs = {
   _id: Scalars['String'];
 };
 
-
 export type QueryGetUserArgs = {
   _id: Scalars['String'];
 };
-
 
 export type QueryJoinRoomArgs = {
   _id: Scalars['String'];
@@ -120,11 +112,22 @@ export type Subscription = {
   messageSent: MessageType;
   roomDeleted: RoomType;
   roomSent: RoomType;
-  userAdded: UserType;
+  userAdded: UserBasicType;
   userDeleted: UserType;
+};
+
+export type UserBasicType = {
+  _id: Scalars['String'];
+  email: Scalars['String'];
+  name: Scalars['String'];
 };
 
 export type UserType = {
   _id: Scalars['String'];
-  username: Scalars['String'];
+  date: Scalars['String'];
+  email: Scalars['String'];
+  hash: Scalars['String'];
+  name: Scalars['String'];
+  salt: Scalars['String'];
+  token: Scalars['String'];
 };

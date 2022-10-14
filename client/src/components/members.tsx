@@ -1,8 +1,9 @@
 import { gql, useMutation, useQuery } from '@apollo/client';
 import { useEffect } from 'react';
 import { MemberType, RoomType, UserType } from '../../__generated_types__/types';
-import { User } from './user';
+import { GET_USER, User } from './user';
 import { compose, filter, not, propEq } from 'ramda';
+import { OneUser } from './oneUser';
 
 const GET_MEMBERS = gql`
   query getMembers($_id: String!) {
@@ -53,6 +54,7 @@ interface MembersProps extends Pick<RoomType, '_id'> {}
 
 export const Members = ({ _id }: MembersProps) => {
   const { loading, error, data, subscribeToMore } = useQuery(GET_MEMBERS, { variables: { _id } });
+
   const [addMember] = useMutation(ADD_MEMBER);
   const [removeMember] = useMutation(REMOVE_MEMBER);
 
@@ -61,7 +63,6 @@ export const Members = ({ _id }: MembersProps) => {
       document: MEMBER_ADD_SUBSCRIPTION,
       updateQuery: (prev, { subscriptionData = {} }) => {
         const { data } = subscriptionData;
-
         if (!data) return prev;
         const { memberAdded } = data || {};
         const { getMembers = [] } = prev || {};
@@ -79,6 +80,7 @@ export const Members = ({ _id }: MembersProps) => {
 
         const { memberRemoved } = data;
         const { getMembers = [] } = prev || {};
+
         const keppedMembers = filter(compose(not, propEq('_id', memberRemoved?._id)), getMembers);
         const removed = keppedMembers.length !== getMembers.length;
         return {
@@ -93,27 +95,28 @@ export const Members = ({ _id }: MembersProps) => {
   }, [_id]);
 
   const handleAdd = async (_userId: UserType['_id']) => {
-    await addMember({ variables: { _id, _userId } });
+    return await addMember({ variables: { _id, _userId } })
+      .then(() => {})
+      .catch((err) => console.log('err', err));
   };
 
   const handleRemove = async (_userId: UserType['_id']) => {
-    const a = await removeMember({ variables: { _id, _userId } });
-    console.log('a', a);
+    return await removeMember({ variables: { _id, _userId } })
+      .then(() => {})
+      .catch((err) => console.log('err', err));
   };
 
   if (loading) return <p>"Loading...";</p>;
   if (error) return <p>`Error! ${error.message}`</p>;
 
   const { getMembers = [] } = data || {};
+
   return (
     <div>
       <User addUserToRoom={(_userId) => handleAdd(_userId)} removeUserFromRoom={(_userId) => handleRemove(_userId)} />
-      <button onClick={() => handleAdd('')}>Add member</button>
-      {getMembers.map(({ _id, _userId }: MemberType) => (
+      {getMembers.map(({ _userId }: MemberType) => (
         <div key={_userId}>
-          <p>
-            {_id}: {_userId}
-          </p>
+          <OneUser _id={_userId} />
         </div>
       ))}
     </div>

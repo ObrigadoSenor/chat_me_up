@@ -1,32 +1,34 @@
-/* eslint-disable no-debugger */
 import { gql, useMutation, useQuery } from '@apollo/client';
 import { compose, filter, not, propEq } from 'ramda';
 import { useEffect, useState } from 'react';
-import { RoomType, UserType } from '../../__generated_types__/types';
+import { UserType } from '../../__generated_types__/types';
 
 const GET_USERS = gql`
   query getUsers {
     getUsers {
       _id
-      username
+      name
+      email
     }
   }
 `;
 
-const GET_USER = gql`
+export const GET_USER = gql`
   query getUser($_id: String!) {
     getUser(_id: $_id) {
       _id
-      username
+      name
+      email
     }
   }
 `;
 
 const ADD_USER = gql`
-  mutation addUser($username: String!) {
-    addUser(username: $username) {
+  mutation addUser($name: String!, $email: String!, $password: String!, $confirmPassword: String!) {
+    addUser(name: $name, email: $email, password: $password, confirmPassword: $confirmPassword) {
       _id
-      username
+      name
+      email
     }
   }
 `;
@@ -35,7 +37,8 @@ const DELETE_USER = gql`
   mutation deleteUser($_id: String!) {
     deleteUser(_id: $_id) {
       _id
-      username
+      name
+      email
     }
   }
 `;
@@ -44,7 +47,8 @@ const USER_ADD_SUBSCRIPTION = gql`
   subscription OnNewUser {
     userAdded {
       _id
-      username
+      name
+      email
     }
   }
 `;
@@ -53,7 +57,8 @@ const USER_DELETE_SUBSCRIPTION = gql`
   subscription OnDeleteUser {
     userDeleted {
       _id
-      username
+      name
+      email
     }
   }
 `;
@@ -63,8 +68,16 @@ interface UserProps {
   removeUserFromRoom: (_userId: UserType['_id']) => void;
 }
 
+interface NewUserProps {
+  name?: string;
+  email?: string;
+  password?: string;
+  confirmPassword?: string;
+}
+
 export const User = ({ addUserToRoom, removeUserFromRoom }: UserProps) => {
-  const [username, setUsername] = useState<string>('');
+  const [username, setUsername] = useState<NewUserProps>({});
+
   const { loading, error, data, subscribeToMore } = useQuery(GET_USERS);
 
   const [addUser] = useMutation(ADD_USER);
@@ -104,7 +117,7 @@ export const User = ({ addUserToRoom, removeUserFromRoom }: UserProps) => {
   }, []);
 
   const handleSend = async () => {
-    await addUser({ variables: { username } })
+    await addUser({ variables: { ...username } })
       .then(() => {})
       .catch((err) => console.log('err', err));
   };
@@ -122,13 +135,37 @@ export const User = ({ addUserToRoom, removeUserFromRoom }: UserProps) => {
   return (
     <div>
       <div>
-        <input type="text" id="name" defaultValue={username} onBlur={(e) => setUsername(e.target.value)}></input>
+        <input
+          type="text"
+          defaultValue={username.name}
+          placeholder="name"
+          onBlur={({ target }) => setUsername((prev) => ({ ...prev, name: target.value }))}
+        ></input>
+        <input
+          type="text"
+          defaultValue={username.email}
+          placeholder="email"
+          onBlur={({ target }) => setUsername((prev) => ({ ...prev, email: target.value }))}
+        ></input>
+        <input
+          type="password"
+          defaultValue={username.password}
+          placeholder="password"
+          onBlur={({ target }) => setUsername((prev) => ({ ...prev, password: target.value }))}
+        ></input>
+        <input
+          type="password"
+          defaultValue={username.confirmPassword}
+          placeholder="confirmPassword"
+          onBlur={({ target }) => setUsername((prev) => ({ ...prev, confirmPassword: target.value }))}
+        ></input>
+
         <button onClick={() => handleSend()}>Add user</button>
       </div>
-      {getUsers.map(({ _id, username }: UserType) => (
+      {getUsers.map(({ _id, name, email }: UserType) => (
         <div key={_id}>
-          <p>{username}</p>
-          <p>{_id}</p>
+          <p>{name}</p>
+          <p>{email}</p>
 
           <button onClick={() => handleDelete(_id)}>Delete user</button>
 

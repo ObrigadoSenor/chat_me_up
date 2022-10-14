@@ -14,9 +14,7 @@
     "fix": "yarn lint-fix && yarn prettier-fix",
     "health-check": "yarn fix && CI=true yarn test --coverage",
     "storybook": "start-storybook -p 6006 -s public",
-    "build-storybook": "build-storybook -s public",
-    "gql-generate": "graphql-codegen --config './codegen.yml'",
-    "gql-generate-watch": "yarn gql-generate --watch"
+    "build-storybook": "build-storybook -s public"
   },
   "eslintConfig": {
     "extends": [
@@ -69,8 +67,6 @@
     "web-vitals": "^2.1.4"
   },
   "devDependencies": {
-    "@graphql-codegen/cli": "^2.13.4",
-    "@graphql-codegen/typescript": "^2.7.3",
     "@storybook/addon-actions": "^6.5.12",
     "@storybook/addon-essentials": "^6.5.12",
     "@storybook/addon-links": "^6.5.12",

@@ -2,6 +2,8 @@ import { gql, useMutation, useQuery } from '@apollo/client';
 import { compose, filter, not, propEq } from 'ramda';
 import { useEffect, useState } from 'react';
 import { RoomType } from '../../__generated_types__/types';
+import { setRoomId } from '../store/slices/room';
+import { useAppDispatch } from '../store/store';
 import { Room } from './room';
 
 const GET_ROOMS = gql`
@@ -49,8 +51,8 @@ const ROOMS_DELETE_SUBSCRIPTION = gql`
 `;
 
 export const Rooms = () => {
+  const disaptch = useAppDispatch();
   const [name, setName] = useState<string>('');
-  const [enterRoomId, setEnterRoomId] = useState<RoomType['_id'] | null>(null);
 
   const { loading, error, data, subscribeToMore } = useQuery(GET_ROOMS);
 
@@ -76,7 +78,7 @@ export const Rooms = () => {
         const { roomDeleted } = data;
         const keppedRooms = filter(compose(not, propEq('_id', roomDeleted?._id)), prev.getRooms || []);
         const removed = keppedRooms.length !== prev.getRooms.length;
-        removed && setEnterRoomId(null);
+        removed && disaptch(setRoomId(null));
         return {
           getRooms: removed ? keppedRooms : prev.getRooms,
         };
@@ -100,17 +102,16 @@ export const Rooms = () => {
   return (
     <div>
       <div>
-        <input type="text" id="name" defaultValue={name} onBlur={(e) => setName(e.target.value)}></input>
+        <input type="text" defaultValue={name} onBlur={(e) => setName(e.target.value)}></input>
         <button onClick={() => handleSend()}>Create room</button>
       </div>
       {data.getRooms.map(({ _id, name }: RoomType) => {
         return (
           <div key={_id}>
-            <button onClick={() => setEnterRoomId(_id)}>{name}</button>
+            <button onClick={() => disaptch(setRoomId(_id))}>{name}</button>
           </div>
         );
       })}
-      {enterRoomId && <Room _id={enterRoomId} />}
     </div>
   );
 };

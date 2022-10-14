@@ -1,7 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import styled from 'styled-components';
+import { Room } from './components/room';
 import { Rooms } from './components/rooms';
 import GlobalStyle from './globalStyle';
+import { useAppSelector } from './store/store';
 
 const Container = styled.div`
   display: flex;
@@ -11,17 +13,12 @@ const Container = styled.div`
 `;
 
 export const App = () => {
-  // const disaptch = useAppDispatch();
-  // const { value } = useAppSelector(({ template }) => template);
+  const { enteredRoomId } = useAppSelector(({ room }) => room);
   return (
     <Container>
       <GlobalStyle />
-      {/* <Button onClick={() => disaptch(decrement())}>Decrement</Button>
-      <Value>{value}</Value>
-      <Button onClick={() => disaptch(increment())}>Increment</Button> */}
-      <div className="App">
-        <Rooms />
-      </div>
+      <Rooms />
+      {enteredRoomId ? <Room _id={enteredRoomId} /> : null}
     </Container>
   );
 };
