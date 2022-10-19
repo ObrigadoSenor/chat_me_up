@@ -12,6 +12,18 @@ export type Scalars = {
   Float: number;
 };
 
+export type ConversationBasicBasicType = {
+  _conversationId: Scalars['String'];
+  _id: Scalars['String'];
+};
+
+export type ConversationType = {
+  _id: Scalars['String'];
+  _membersId: Scalars['String'];
+  _messagesId: Scalars['String'];
+  name: Scalars['String'];
+};
+
 export type MemberType = {
   _id: Scalars['String'];
   _userId: Scalars['String'];
@@ -19,30 +31,40 @@ export type MemberType = {
 
 export type MessageType = {
   _id: Scalars['String'];
+  _userId: Scalars['String'];
   message: Scalars['String'];
-  name: Scalars['String'];
 };
 
 export type MessagesType = {
+  _conversationId: Scalars['String'];
   _id: Scalars['String'];
   messages: Array<MessageType>;
-  roomId: Scalars['String'];
 };
 
 export type Mutation = {
+  addConversation: ConversationType;
   addMember: MemberType;
   addUser: UserType;
-  deleteRoom: RoomType;
+  deleteConversation: ConversationType;
   deleteUser: UserType;
+  loginUser: UserType;
   removeMember: MemberType;
   sendMessage: MessageType;
-  sendRoom: RoomType;
 };
 
+
+export type MutationAddConversationArgs = {
+  _userId: Scalars['String'];
+  membersIds: Array<Scalars['String']>;
+  name: Scalars['String'];
+};
+
+
 export type MutationAddMemberArgs = {
-  _id: Scalars['String'];
+  _conversationId: Scalars['String'];
   _userId: Scalars['String'];
 };
+
 
 export type MutationAddUserArgs = {
   confirmPassword: Scalars['String'];
@@ -51,83 +73,109 @@ export type MutationAddUserArgs = {
   password: Scalars['String'];
 };
 
-export type MutationDeleteRoomArgs = {
-  _id: Scalars['String'];
+
+export type MutationDeleteConversationArgs = {
+  _conversationId: Scalars['String'];
 };
+
 
 export type MutationDeleteUserArgs = {
   _id: Scalars['String'];
 };
 
+
+export type MutationLoginUserArgs = {
+  email: Scalars['String'];
+  password: Scalars['String'];
+};
+
+
 export type MutationRemoveMemberArgs = {
-  _id: Scalars['String'];
+  _conversationId: Scalars['String'];
   _userId: Scalars['String'];
 };
 
-export type MutationSendMessageArgs = {
-  _id: Scalars['String'];
-  message: Scalars['String'];
-  name: Scalars['String'];
-};
 
-export type MutationSendRoomArgs = {
-  name: Scalars['String'];
+export type MutationSendMessageArgs = {
+  _conversationId: Scalars['String'];
+  _userId: Scalars['String'];
+  message: Scalars['String'];
 };
 
 export type Query = {
+  getConversations: Array<ConversationType>;
   getMembers: Array<MemberType>;
   getMessages: MessagesType;
-  getRooms: Array<RoomType>;
   getUser: UserType;
+  getUserByToken: UserType;
   getUsers: Array<UserType>;
-  joinRoom: RoomType;
+  joinConversation: ConversationType;
+  validToken: ValidTokenType;
 };
+
+
+export type QueryGetConversationsArgs = {
+  _userId: Scalars['String'];
+};
+
 
 export type QueryGetMembersArgs = {
-  _id: Scalars['String'];
+  _conversationId: Scalars['String'];
 };
 
+
 export type QueryGetMessagesArgs = {
-  _id: Scalars['String'];
+  _conversationId: Scalars['String'];
 };
+
 
 export type QueryGetUserArgs = {
   _id: Scalars['String'];
 };
 
-export type QueryJoinRoomArgs = {
-  _id: Scalars['String'];
+
+export type QueryGetUserByTokenArgs = {
+  token: Scalars['String'];
 };
 
-export type RoomType = {
-  _id: Scalars['String'];
-  membersId: Scalars['String'];
-  messagesId: Scalars['String'];
-  name: Scalars['String'];
+
+export type QueryJoinConversationArgs = {
+  _conversationId: Scalars['String'];
+};
+
+
+export type QueryValidTokenArgs = {
+  token: Scalars['String'];
 };
 
 export type Subscription = {
+  conversationAdded: ConversationType;
+  conversationDeleted: ConversationType;
   memberAdded: MemberType;
   memberRemoved: MemberType;
   messageSent: MessageType;
-  roomDeleted: RoomType;
-  roomSent: RoomType;
   userAdded: UserBasicType;
   userDeleted: UserType;
 };
 
 export type UserBasicType = {
   _id: Scalars['String'];
+  conversations: Array<ConversationBasicBasicType>;
   email: Scalars['String'];
   name: Scalars['String'];
 };
 
 export type UserType = {
   _id: Scalars['String'];
+  conversations: Array<ConversationBasicBasicType>;
   date: Scalars['String'];
   email: Scalars['String'];
   hash: Scalars['String'];
   name: Scalars['String'];
   salt: Scalars['String'];
   token: Scalars['String'];
+};
+
+export type ValidTokenType = {
+  expired: Scalars['Boolean'];
 };

@@ -1,13 +1,13 @@
 import { gql, useMutation, useQuery } from '@apollo/client';
-import { useEffect } from 'react';
-import { MemberType, RoomType, UserType } from '../../__generated_types__/types';
-import { GET_USER, User } from './user';
 import { compose, filter, not, propEq } from 'ramda';
-import { OneUser } from './oneUser';
+import { useEffect, useMemo } from 'react';
+import { MemberType, UserType } from '../../../__generated_types__/types';
+import { useAppSelector } from '../../store/store';
+import { Member } from './member';
 
 const GET_MEMBERS = gql`
-  query getMembers($_id: String!) {
-    getMembers(_id: $_id) {
+  query getMembers($_conversationId: String!) {
+    getMembers(_conversationId: $_conversationId) {
       _id
       _userId
     }
@@ -15,8 +15,8 @@ const GET_MEMBERS = gql`
 `;
 
 const ADD_MEMBER = gql`
-  mutation addMember($_id: String!, $_userId: String!) {
-    addMember(_id: $_id, _userId: $_userId) {
+  mutation addMember($_conversationId: String!, $_userId: String!) {
+    addMember(_conversationId: $_conversationId, _userId: $_userId) {
       _id
       _userId
     }
@@ -24,8 +24,8 @@ const ADD_MEMBER = gql`
 `;
 
 const REMOVE_MEMBER = gql`
-  mutation removeMember($_id: String!, $_userId: String!) {
-    removeMember(_id: $_id, _userId: $_userId) {
+  mutation removeMember($_conversationId: String!, $_userId: String!) {
+    removeMember(_conversationId: $_conversationId, _userId: $_userId) {
       _id
       _userId
     }
@@ -50,10 +50,9 @@ const MEMBER_REMOVE_SUBSCRIPTION = gql`
   }
 `;
 
-interface MembersProps extends Pick<RoomType, '_id'> {}
-
-export const Members = ({ _id }: MembersProps) => {
-  const { loading, error, data, subscribeToMore } = useQuery(GET_MEMBERS, { variables: { _id } });
+export const Members = () => {
+  const { enteredConversationId: _conversationId } = useAppSelector(({ conversation }) => conversation);
+  const { loading, error, data, subscribeToMore } = useQuery(GET_MEMBERS, { variables: { _conversationId } });
 
   const [addMember] = useMutation(ADD_MEMBER);
   const [removeMember] = useMutation(REMOVE_MEMBER);
@@ -92,33 +91,29 @@ export const Members = ({ _id }: MembersProps) => {
       unsubFromAdd();
       unsubFromDelete();
     };
-  }, [_id]);
+  }, []);
 
   const handleAdd = async (_userId: UserType['_id']) => {
-    return await addMember({ variables: { _id, _userId } })
+    return await addMember({ variables: { _conversationId, _userId } })
       .then(() => {})
       .catch((err) => console.log('err', err));
   };
 
   const handleRemove = async (_userId: UserType['_id']) => {
-    return await removeMember({ variables: { _id, _userId } })
+    return await removeMember({ variables: { _conversationId, _userId } })
       .then(() => {})
       .catch((err) => console.log('err', err));
   };
 
+  const { getMembers = [] } = data || {};
+
+  const memoMembers = useMemo(
+    () => getMembers.map((props: MemberType) => <Member key={props._id} {...props} />),
+    [getMembers],
+  );
+
   if (loading) return <p>"Loading...";</p>;
   if (error) return <p>`Error! ${error.message}`</p>;
 
-  const { getMembers = [] } = data || {};
-
-  return (
-    <div>
-      <User addUserToRoom={(_userId) => handleAdd(_userId)} removeUserFromRoom={(_userId) => handleRemove(_userId)} />
-      {getMembers.map(({ _userId }: MemberType) => (
-        <div key={_userId}>
-          <OneUser _id={_userId} />
-        </div>
-      ))}
-    </div>
-  );
+  return memoMembers;
 };

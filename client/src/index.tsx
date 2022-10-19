@@ -4,6 +4,7 @@ import ReactDOM from 'react-dom/client';
 
 import { App } from './App';
 import { ApolloProvider } from './providers/apolloProvider';
+import { AuthProvider } from './providers/authProvider';
 import { StoreProvider } from './providers/storeProvider';
 import reportWebVitals from './reportWebVitals';
 
@@ -12,7 +13,9 @@ root.render(
   <React.StrictMode>
     <ApolloProvider>
       <StoreProvider>
-        <App />
+        <AuthProvider>
+          <App />
+        </AuthProvider>
       </StoreProvider>
     </ApolloProvider>
   </React.StrictMode>,

@@ -9,17 +9,25 @@ import {
   Root,
   Subscription,
 } from "type-graphql";
-import { signUpUser } from "../axios/user";
+import { loginUser } from "../axios/loginUser";
+import { signUpUser } from "../axios/signUpUser";
+import { validToken } from "../axios/validToken";
 
 import { Error } from "../entities/error";
 
-import { UserAddType, UserBasicType, UserType } from "../entities/user";
+import {
+  UserAddType,
+  UserBasicType,
+  UserType,
+  ValidTokenType,
+} from "../entities/user";
 import { User, UserBasicModelType, UserModelType } from "../models/user";
 
 type idType = UserType["_id"];
 type nameType = UserAddType["name"];
 type emailType = UserAddType["email"];
 type passwordType = UserAddType["password"];
+type tokenType = UserType["token"];
 
 @Resolver()
 export class UserResolver {
@@ -41,6 +49,26 @@ export class UserResolver {
     return user;
   }
 
+  @Query(() => ValidTokenType)
+  async validToken(
+    @Arg("token") token: tokenType
+  ): Promise<ValidTokenType | Error> {
+    const { expired } = await validToken({ token });
+
+    return { expired };
+  }
+
+  @Query(() => UserType)
+  async getUserByToken(
+    @Arg("token") token: tokenType
+  ): Promise<UserModelType | Error> {
+    const user = await User.findOne<UserModelType>({ token });
+    if (!user) {
+      return { code: 500, message: `No user with token ${token}` };
+    }
+    return user;
+  }
+
   @Mutation(() => UserType)
   async addUser(
     @PubSub("OnNewUser") publish: Publisher<UserBasicModelType>,
@@ -50,13 +78,32 @@ export class UserResolver {
     @Arg("confirmPassword") confirmPassword: passwordType
   ): Promise<UserBasicModelType | Error> {
     const user = await signUpUser({ name, email, password, confirmPassword });
-    console.log("user", user);
 
     if (!user) {
       return { code: 500, message: `Could'nt add user` };
     }
 
-    await publish(user);
+    const userWithConversation = (await User.findOneAndUpdate(
+      { _id: user?._id },
+      { $set: { conversations: [] } },
+      { returnDocument: "after" }
+    )) as UserBasicModelType;
+
+    await publish(userWithConversation);
+    return userWithConversation;
+  }
+
+  @Mutation(() => UserType)
+  async loginUser(
+    @Arg("email") email: emailType,
+    @Arg("password") password: passwordType
+  ): Promise<UserBasicModelType | Error> {
+    const user = await loginUser({ email, password });
+
+    if (!user) {
+      return { code: 500, message: `Could'nt add user` };
+    }
+
     return user;
   }
 

@@ -2,21 +2,21 @@
 import { ObjectType, Field } from "type-graphql";
 
 @ObjectType()
-export class MessageType {
-  @Field()
-  _id: string;
-  @Field()
-  _userId: string;
-  @Field()
-  message: string;
-}
-
-@ObjectType()
-export class MessagesType {
+export class ConversationBasicBasicType {
   @Field()
   _id: string;
   @Field()
   _conversationId: string;
-  @Field(() => [MessageType])
-  messages: [MessageType];
+}
+
+@ObjectType()
+export class ConversationType {
+  @Field()
+  _id: string;
+  @Field()
+  name: string;
+  @Field()
+  _membersId: string;
+  @Field()
+  _messagesId: string;
 }

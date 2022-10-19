@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { ObjectType, Field } from "type-graphql";
+import { ConversationBasicBasicType } from "./conversation";
 
 @ObjectType()
 export class UserBasicType {
@@ -9,6 +10,8 @@ export class UserBasicType {
   name: string;
   @Field()
   email: string;
+  @Field(() => [ConversationBasicBasicType])
+  conversations: [ConversationBasicBasicType];
 }
 
 @ObjectType()
@@ -35,4 +38,10 @@ export class UserAddType {
   password: string;
   @Field()
   confirmPassword: string;
+}
+
+@ObjectType()
+export class ValidTokenType {
+  @Field()
+  expired: boolean;
 }

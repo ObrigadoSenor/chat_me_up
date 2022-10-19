@@ -15,24 +15,29 @@ import { MembersType, MemberType } from "./../entities/member";
 
 import { Error } from "../entities/error";
 
-import { RoomType } from "../entities/room";
+import { ConversationType } from "../entities/conversation";
 import { UserType } from "../entities/user";
 
 import { MemberModelType, Members } from "./../models/member";
 
-type idType = RoomType["_id"];
+type conversationIdType = ConversationType["_id"];
 type userIdType = UserType["_id"];
 
 @Resolver()
 export class MemberResolver {
   @Query(() => [MemberType])
   async getMembers(
-    @Arg("_id") _id: idType
+    @Arg("_conversationId") _conversationId: conversationIdType
   ): Promise<MemberModelType[] | Error> {
-    const members = await Members.findOne<MembersType>({ roomId: _id });
+    const members = await Members.findOne<MembersType>({
+      _conversationId,
+    });
 
     if (!members) {
-      return { code: 500, message: `No members in room with id ${_id}` };
+      return {
+        code: 500,
+        message: `No members in room with id ${_conversationId}`,
+      };
     }
 
     return members.members;
@@ -41,11 +46,11 @@ export class MemberResolver {
   @Mutation(() => MemberType)
   async addMember(
     @PubSub("OnNewMember") publish: Publisher<MemberType>,
-    @Arg("_id") _id: idType,
+    @Arg("_conversationId") _conversationId: conversationIdType,
     @Arg("_userId") _userId: userIdType
   ): Promise<MemberType | Error> {
     const members = await Members.findOneAndUpdate<MembersType>(
-      { roomId: _id },
+      { _conversationId },
       { $push: { members: { _userId } } },
       { returnDocument: "after" }
     );
@@ -64,11 +69,11 @@ export class MemberResolver {
   @Mutation(() => MemberType)
   async removeMember(
     @PubSub("OnRemoveMember") publish: Publisher<MemberType>,
-    @Arg("_id") _id: idType,
+    @Arg("_conversationId") _conversationId: conversationIdType,
     @Arg("_userId") _userId: userIdType
   ): Promise<MemberType | Error> {
     const members = await Members.findOneAndUpdate<MembersType>(
-      { roommId: _id },
+      { _conversationId },
       { $pull: { members: { _userId } } },
       { returnOriginal: true }
     );

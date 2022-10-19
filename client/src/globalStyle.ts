@@ -8,6 +8,6 @@ export default createGlobalStyle`
        box-sizing:border-box;
    }
    #root{
-       height: 100vh;
+       /* height: 100vh; */
    }
 `;
