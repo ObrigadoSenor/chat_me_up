@@ -1,15 +1,17 @@
 import { gql, useQuery } from '@apollo/client';
-import { useEffect } from 'react';
-import { MessageType, RoomType } from '../../__generated_types__/types';
+import { useEffect, useMemo } from 'react';
+import { MessageType } from '../../../__generated_types__/types';
+import { useAppSelector } from '../../store/store';
+import { Message } from './message';
 
 const GET_MESSAGES = gql`
-  query getMessages($_id: String!) {
-    getMessages(_id: $_id) {
+  query getMessages($_conversationId: String!) {
+    getMessages(_conversationId: $_conversationId) {
       _id
-      roomId
+      _conversationId
       messages {
         _id
-        name
+        _userId
         message
       }
     }
@@ -20,16 +22,15 @@ const MESSAGES_SUBSCRIPTION = gql`
   subscription OnNewMessage {
     messageSent {
       _id
-      name
+      _userId
       message
     }
   }
 `;
 
-interface MessagesProps extends Pick<RoomType, '_id'> {}
-
-export const Messages = ({ _id }: MessagesProps) => {
-  const { loading, error, data, subscribeToMore } = useQuery(GET_MESSAGES, { variables: { _id } });
+export const Messages = () => {
+  const { enteredConversationId: _conversationId } = useAppSelector(({ conversation }) => conversation);
+  const { loading, error, data, subscribeToMore } = useQuery(GET_MESSAGES, { variables: { _conversationId } });
 
   useEffect(() => {
     const unsub = subscribeToMore({
@@ -46,21 +47,16 @@ export const Messages = ({ _id }: MessagesProps) => {
       },
     });
     return () => unsub();
-  }, [_id]);
+  }, []);
+
+  const { messages = [] } = data?.getMessages || {};
+  const memoMessages = useMemo(
+    () => messages.map((props: MessageType) => <Message key={props._id} {...props} />),
+    [messages],
+  );
 
   if (loading) return <p>"Loading...";</p>;
   if (error) return <p>`Error! ${error.message}`</p>;
 
-  const { messages = [] } = data?.getMessages || {};
-  return (
-    <div>
-      {messages.map(({ _id, name, message }: MessageType) => (
-        <div key={_id}>
-          <p>
-            {name}: {message}
-          </p>
-        </div>
-      ))}
-    </div>
-  );
+  return memoMessages;
 };

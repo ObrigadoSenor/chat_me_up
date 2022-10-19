@@ -14,23 +14,29 @@ import { last } from "ramda";
 import { Error } from "../entities/error";
 import { MessagesType, MessageType } from "../entities/message";
 
-import { RoomType } from "../entities/room";
-import { Messages, MessagesModelType } from "../models/message";
+import { ConversationType } from "../entities/conversation";
+import {
+  Messages,
+  MessagesModelType,
+  MessageModelType,
+} from "../models/message";
 
-type idType = RoomType["_id"];
-type nameType = MessageType["name"];
+type conversationIdType = ConversationType["_id"];
+type userIdType = MessageType["_userId"];
 type messageType = MessageType["message"];
 
 @Resolver()
 export class MessageResolver {
   @Query(() => MessagesType)
   async getMessages(
-    @Arg("_id") _id: idType
+    @Arg("_conversationId") _conversationId: conversationIdType
   ): Promise<MessagesModelType | Error> {
-    const messages = await Messages.findOne<MessagesModelType>({ roomId: _id });
+    const messages = await Messages.findOne<MessagesModelType>({
+      _conversationId,
+    });
 
     if (!messages) {
-      return { code: 500, message: `No chat with id ${_id}` };
+      return { code: 500, message: `No chat with id ${_conversationId}` };
     }
     return messages;
   }
@@ -38,15 +44,16 @@ export class MessageResolver {
   @Mutation(() => MessageType)
   async sendMessage(
     @PubSub("OnNewMessage") publish: Publisher<MessageType>,
-    @Arg("_id") _id: idType,
-    @Arg("name") name: nameType,
+    @Arg("_conversationId") _conversationId: conversationIdType,
+    @Arg("_userId") _userId: userIdType,
     @Arg("message") message: messageType
-  ): Promise<MessageType | Error> {
+  ): Promise<MessageModelType | Error> {
     const messages = await Messages.findOneAndUpdate<MessagesType>(
-      { roomId: _id },
-      { $push: { messages: { name, message } } },
+      { _conversationId },
+      { $push: { messages: { _userId, message } } },
       { returnDocument: "after" }
     );
+
     if (!messages) {
       return { code: 500, message: `Could'nt add message` };
     }
@@ -55,6 +62,7 @@ export class MessageResolver {
     if (newlyAddedMessage === undefined) {
       return { code: 500, message: `Could'nt get the last send message` };
     }
+
     await publish(newlyAddedMessage);
     return newlyAddedMessage;
   }
@@ -63,6 +71,8 @@ export class MessageResolver {
     topics: "OnNewMessage",
   })
   messageSent(@Root() props: HydratedDocument<MessageType>): MessageType {
+    console.log("message sub: ", props);
+
     return props;
   }
 }

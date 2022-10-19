@@ -3,6 +3,18 @@
 # !!!   DO NOT MODIFY THIS FILE BY YOURSELF   !!!
 # -----------------------------------------------
 
+type ConversationBasicBasicType {
+  _conversationId: String!
+  _id: String!
+}
+
+type ConversationType {
+  _id: String!
+  _membersId: String!
+  _messagesId: String!
+  name: String!
+}
+
 type MemberType {
   _id: String!
   _userId: String!
@@ -10,64 +22,66 @@ type MemberType {
 
 type MessageType {
   _id: String!
+  _userId: String!
   message: String!
-  name: String!
 }
 
 type MessagesType {
+  _conversationId: String!
   _id: String!
   messages: [MessageType!]!
-  roomId: String!
 }
 
 type Mutation {
-  addMember(_id: String!, _userId: String!): MemberType!
+  addConversation(_userId: String!, membersIds: [String!]!, name: String!): ConversationType!
+  addMember(_conversationId: String!, _userId: String!): MemberType!
   addUser(confirmPassword: String!, email: String!, name: String!, password: String!): UserType!
-  deleteRoom(_id: String!): RoomType!
+  deleteConversation(_conversationId: String!): ConversationType!
   deleteUser(_id: String!): UserType!
-  removeMember(_id: String!, _userId: String!): MemberType!
-  sendMessage(_id: String!, message: String!, name: String!): MessageType!
-  sendRoom(name: String!): RoomType!
+  loginUser(email: String!, password: String!): UserType!
+  removeMember(_conversationId: String!, _userId: String!): MemberType!
+  sendMessage(_conversationId: String!, _userId: String!, message: String!): MessageType!
 }
 
 type Query {
-  getMembers(_id: String!): [MemberType!]!
-  getMessages(_id: String!): MessagesType!
-  getRooms: [RoomType!]!
+  getConversations(_userId: String!): [ConversationType!]!
+  getMembers(_conversationId: String!): [MemberType!]!
+  getMessages(_conversationId: String!): MessagesType!
   getUser(_id: String!): UserType!
+  getUserByToken(token: String!): UserType!
   getUsers: [UserType!]!
-  joinRoom(_id: String!): RoomType!
-}
-
-type RoomType {
-  _id: String!
-  membersId: String!
-  messagesId: String!
-  name: String!
+  joinConversation(_conversationId: String!): ConversationType!
+  validToken(token: String!): ValidTokenType!
 }
 
 type Subscription {
+  conversationAdded: ConversationType!
+  conversationDeleted: ConversationType!
   memberAdded: MemberType!
   memberRemoved: MemberType!
   messageSent: MessageType!
-  roomDeleted: RoomType!
-  roomSent: RoomType!
   userAdded: UserBasicType!
   userDeleted: UserType!
 }
 
 type UserBasicType {
   _id: String!
+  conversations: [ConversationBasicBasicType!]!
   email: String!
   name: String!
 }
 
 type UserType {
   _id: String!
+  conversations: [ConversationBasicBasicType!]!
   date: String!
   email: String!
   hash: String!
   name: String!
   salt: String!
   token: String!
+}
+
+type ValidTokenType {
+  expired: Boolean!
 }

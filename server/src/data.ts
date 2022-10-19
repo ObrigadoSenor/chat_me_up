@@ -1,3 +1,3 @@
-import { RoomType } from "./entities/room";
+import { ConversationType } from "./entities/conversation";
 
-export const rooms: RoomType[] = [];
+export const rooms: ConversationType[] = [];

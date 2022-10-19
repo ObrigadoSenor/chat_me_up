@@ -12,7 +12,7 @@ export class MembersType {
   @Field()
   _id: string;
   @Field()
-  roomId: string;
+  _conversationId: string;
   @Field(() => [MemberType])
   members: [MemberType];
 }

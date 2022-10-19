@@ -1,10 +1,10 @@
-import { UserAddType, UserBasicType } from "./../entities/user";
+import { UserAddType, UserBasicType } from "../entities/user";
 import axios from "axios";
 import { env } from "process";
 import { print } from "graphql";
 import gql from "graphql-tag";
 
-const ADD_USER = gql`
+const SIGN_UP_USER = gql`
   mutation signUpUser(
     $name: String!
     $email: String!
@@ -39,7 +39,7 @@ export const signUpUser = async (props: Omit<UserAddType, "_id">) => {
 
   const user = await axios
     .post(endpoint, {
-      query: print(ADD_USER),
+      query: print(SIGN_UP_USER),
       variables: props,
     })
     .then(({ data }) => data?.data?.signUpUser?.node?.user)

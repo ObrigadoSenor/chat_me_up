@@ -6,9 +6,9 @@
   "license": "MIT",
   "scripts": {
     "watch": "tsc -w",
-    "dev": "nodemon dist/src/index.js",
+    "dev": "nodemon dist/server/src/index.js",
     "build": "tsc",
-    "start": "node dist/src/index.js",
+    "start": "node dist/server/src/index.js",
     "dev-start": "concurrently --kill-others \"yarn watch\" \"yarn dev\" \"yarn gql-generate-watch\"",
     "gql-generate": "graphql-codegen --config './codegen.yml'",
     "gql-generate-watch": "yarn gql-generate --watch",

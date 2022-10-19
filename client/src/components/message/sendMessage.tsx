@@ -1,26 +1,26 @@
 import { gql, useMutation } from '@apollo/client';
 import { useState } from 'react';
-import { RoomType } from '../../__generated_types__/types';
+import { useAppSelector } from '../../store/store';
 
 const SEND_MESSAGE = gql`
-  mutation sendMessage($name: String!, $message: String!, $_id: String!) {
-    sendMessage(name: $name, message: $message, _id: $_id) {
+  mutation sendMessage($_userId: String!, $message: String!, $_conversationId: String!) {
+    sendMessage(_userId: $_userId, message: $message, _conversationId: $_conversationId) {
       _id
-      name
+      _userId
       message
     }
   }
 `;
 
-interface SendMessageProps extends Pick<RoomType, '_id'> {}
+export const SendMessage = () => {
+  const { enteredConversationId: _conversationId } = useAppSelector(({ conversation }) => conversation);
+  const { details } = useAppSelector(({ auth }) => auth);
 
-export const SendMessage = ({ _id }: SendMessageProps) => {
-  const [name, setName] = useState<string>('');
   const [message, setMessage] = useState<string>('');
   const [sendMessage] = useMutation(SEND_MESSAGE);
 
   const handleSend = () => {
-    sendMessage({ variables: { name, message, _id } })
+    sendMessage({ variables: { _userId: details?._id, message, _conversationId } })
       .then(() => {
         setMessage('');
       })
@@ -29,7 +29,6 @@ export const SendMessage = ({ _id }: SendMessageProps) => {
 
   return (
     <div>
-      <input type="text" value={name} onChange={(e) => setName(e.target.value)}></input>
       <input type="text" value={message} onChange={(e) => setMessage(e.target.value)}></input>
       <button onClick={handleSend}>Create message</button>
     </div>

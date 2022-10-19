@@ -10,7 +10,7 @@ const MemberSchema = new Schema({
 
 export const MembersSchema = new Schema({
   members: [MemberSchema],
-  roomId: {
+  _conversationId: {
     type: String,
     required: true,
   },

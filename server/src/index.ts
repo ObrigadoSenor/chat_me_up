@@ -15,7 +15,7 @@ import { WebSocketServer } from "ws";
 import { mongo } from "./mongo";
 import { MemberResolver } from "./resolvers/member";
 import { MessageResolver } from "./resolvers/message";
-import { RoomResolver } from "./resolvers/room";
+import { ConversationResolver } from "./resolvers/conversation";
 import { UserResolver } from "./resolvers/user";
 
 dotenv.config();
@@ -34,7 +34,12 @@ const main = async () => {
   const httpServer = createServer(app);
 
   const schema = await buildSchema({
-    resolvers: [MessageResolver, RoomResolver, UserResolver, MemberResolver],
+    resolvers: [
+      MessageResolver,
+      ConversationResolver,
+      UserResolver,
+      MemberResolver,
+    ],
     emitSchemaFile: path.resolve("./server.gql"),
     validate: false,
   });
