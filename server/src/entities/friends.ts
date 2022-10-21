@@ -28,14 +28,6 @@ export class FriendsType {
   requests: [FriendType];
   @Field(() => [FriendType])
   accepted: [FriendType];
-}
-
-@ObjectType()
-export class FriendsSubType {
-  @Field()
-  status: "keep" | "delete";
-  @Field()
-  user: FriendType;
-  @Field()
-  friend: FriendType;
+  @Field(() => [FriendType])
+  rejected: [FriendType];
 }

@@ -140,6 +140,9 @@ export class FriendResolver {
     @Arg("friendSubTypeTo", { nullable: true })
     friendSubTypeTo: friendApprovalType = "accepted"
   ): Promise<FriendsType | Error> {
+    console.log("userSubTypeTo", userSubTypeTo);
+    console.log("friendSubTypeTo", friendSubTypeTo);
+
     const friendRequest = await Friends.findOneAndUpdate<FriendsType>(
       { _userId: _friendId },
       {
@@ -203,4 +206,15 @@ export class FriendResolver {
 
     return props;
   }
+
+  // @Subscription(() => FriendSubType, {
+  //   topics: "OnNewFriendStatus",
+  // })
+  // friendStatusAdded(
+  //   @Root() props: HydratedDocument<FriendRequestType>
+  // ): FriendRequestType {
+  //   console.log("on updated status: ", props);
+
+  //   return props;
+  // }
 }

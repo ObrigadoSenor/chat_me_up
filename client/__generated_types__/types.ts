@@ -39,6 +39,7 @@ export type FriendsType = {
   _userId: Scalars['String'];
   accepted: Array<FriendType>;
   pending: Array<FriendType>;
+  rejected: Array<FriendType>;
   requests: Array<FriendType>;
 };
 

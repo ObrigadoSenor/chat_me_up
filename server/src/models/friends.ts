@@ -29,6 +29,13 @@ const AcceptedSchema = new Schema({
   },
 });
 
+const RejectedSchema = new Schema({
+  _userId: {
+    type: String,
+    required: true,
+  },
+});
+
 export const FriendsSchema = new Schema({
   _userId: {
     type: String,
@@ -37,6 +44,7 @@ export const FriendsSchema = new Schema({
   pending: [PendingdSchema],
   requests: [RequestdSchema],
   accepted: [AcceptedSchema],
+  rejected: [RejectedSchema],
 });
 
 export type FriendsModelType = FriendsType | Document;

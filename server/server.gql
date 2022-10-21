@@ -30,6 +30,7 @@ type FriendsType {
   _userId: String!
   accepted: [FriendType!]!
   pending: [FriendType!]!
+  rejected: [FriendType!]!
   requests: [FriendType!]!
 }
 

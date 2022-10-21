@@ -17,5 +17,5 @@ export const useUser = (_id: UserType['_id']) => {
 
   const getUser = useMemo(() => data?.getUser, [data]);
 
-  return { ...getUser };
+  return { ...getUser } as UserBasicType;
 };
