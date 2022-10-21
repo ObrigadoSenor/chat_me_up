@@ -1,10 +1,10 @@
 import { MessageType } from '../../../__generated_types__/types';
-import { useUserData } from '../../hooks/useUserData';
+import { useUser } from '../../hooks/useUser';
 
 interface MessageProps extends MessageType {}
 
 export const Message = ({ _userId, message }: MessageProps) => {
-  const { name } = useUserData(_userId);
+  const { name } = useUser(_userId);
 
   return (
     <div>

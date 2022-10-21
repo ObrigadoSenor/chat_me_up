@@ -3,7 +3,7 @@
 # !!!   DO NOT MODIFY THIS FILE BY YOURSELF   !!!
 # -----------------------------------------------
 
-type ConversationBasicBasicType {
+type ConversationBasicType {
   _conversationId: String!
   _id: String!
 }
@@ -13,6 +13,24 @@ type ConversationType {
   _membersId: String!
   _messagesId: String!
   name: String!
+}
+
+type FriendType {
+  _id: String!
+  _userId: String!
+}
+
+type FriendsBasicType {
+  _id: String!
+  _userId: String!
+}
+
+type FriendsType {
+  _id: String!
+  _userId: String!
+  accepted: [FriendType!]!
+  pending: [FriendType!]!
+  requests: [FriendType!]!
 }
 
 type MemberType {
@@ -40,11 +58,15 @@ type Mutation {
   deleteUser(_id: String!): UserType!
   loginUser(email: String!, password: String!): UserType!
   removeMember(_conversationId: String!, _userId: String!): MemberType!
+  sendFriendRequest(_friendId: String!, _userId: String!, friendSubType: String, userSubType: String): FriendType!
   sendMessage(_conversationId: String!, _userId: String!, message: String!): MessageType!
+  updateFriendRequest(_friendId: String!, _userId: String!, friendSubTypeFrom: String, friendSubTypeTo: String, userSubTypeFrom: String, userSubTypeTo: String): FriendType!
 }
 
 type Query {
   getConversations(_userId: String!): [ConversationType!]!
+  getFriends(_userId: String!, type: String): [FriendType!]!
+  getFriendsNode(_userId: String!): FriendsType!
   getMembers(_conversationId: String!): [MemberType!]!
   getMessages(_conversationId: String!): MessagesType!
   getUser(_id: String!): UserType!
@@ -57,6 +79,7 @@ type Query {
 type Subscription {
   conversationAdded: ConversationType!
   conversationDeleted: ConversationType!
+  friendRequestSent: [FriendsType!]!
   memberAdded: MemberType!
   memberRemoved: MemberType!
   messageSent: MessageType!
@@ -66,16 +89,18 @@ type Subscription {
 
 type UserBasicType {
   _id: String!
-  conversations: [ConversationBasicBasicType!]!
+  conversations: [ConversationBasicType!]!
   email: String!
+  friends: FriendsBasicType!
   name: String!
 }
 
 type UserType {
   _id: String!
-  conversations: [ConversationBasicBasicType!]!
+  conversations: [ConversationBasicType!]!
   date: String!
   email: String!
+  friends: FriendsBasicType!
   hash: String!
   name: String!
   salt: String!

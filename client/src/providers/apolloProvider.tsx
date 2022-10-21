@@ -7,9 +7,6 @@ import { ReactNode } from 'react';
 const path = `localhost:${process.env.REACT_APP_SERVER_PORT}`;
 const httpGQLPath = `http://${path}/graphql`;
 
-// const authPath = `localhost:${process.env.REACT_APP_AUTH_PORT}`;
-// const httpAuthGQLPath = `http://${authPath}/graphql`;
-
 interface ApolloProviderProps {
   children: ReactNode;
 }
@@ -24,16 +21,6 @@ const httpLink = new HttpLink({
   uri: httpGQLPath,
 });
 
-// const authLink = new HttpLink({
-//   uri: httpAuthGQLPath,
-// });
-
-// const linkSplit = split(
-//   (operation) => operation.getContext().clientName === 'auth',
-//   authLink, //if above
-//   httpLink,
-// );
-
 const link = split(
   ({ query }) => {
     const definition = getMainDefinition(query);
@@ -43,9 +30,26 @@ const link = split(
   httpLink,
 );
 
+const cache = new InMemoryCache({
+  typePolicies: {
+    Query: {
+      fields: {
+        getFriends: {
+          merge(existing, incoming) {
+            return incoming;
+          },
+        },
+        // getFriendsNode: {
+        //   merge: true,
+        // },
+      },
+    },
+  },
+});
+
 const client = new ApolloClient({
   link,
-  cache: new InMemoryCache(),
+  cache,
 });
 
 export const ApolloProvider = ({ children }: ApolloProviderProps) => (

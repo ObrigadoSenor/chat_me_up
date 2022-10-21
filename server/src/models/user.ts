@@ -1,12 +1,7 @@
 import { Document, model, Schema } from "mongoose";
 import { UserBasicType, UserType } from "./../entities/user";
-
-const ConversationSchema = new Schema({
-  _conversationId: {
-    type: String,
-    required: true,
-  },
-});
+import { ConversationUserSchema } from "./conversation";
+import { FriendsUserSchema } from "./friends";
 
 export const UserSchema = new Schema({
   name: {
@@ -33,7 +28,8 @@ export const UserSchema = new Schema({
     type: Date,
     default: Date.now,
   },
-  conversations: [ConversationSchema],
+  conversations: [ConversationUserSchema],
+  friends: FriendsUserSchema,
 });
 
 export type UserBasicModelType = UserBasicType | Document;

@@ -39,7 +39,7 @@ const Conversation = () => {
 
   return (
     <div>
-      <h4>{data?.joinConversation?.name}</h4>
+      <h1>{data?.joinConversation?.name}</h1>
       <button onClick={() => handleDelete()}>Delete</button>
       <Members />
       <SendMessage />

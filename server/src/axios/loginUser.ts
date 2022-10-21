@@ -36,8 +36,6 @@ export const loginUser = async (
       variables: props,
     })
     .then(({ data }) => {
-      console.log("data login user", data);
-
       return {
         ...data?.data?.loginUser?.node?.user,
         token: data?.data?.loginUser?.node?.token,

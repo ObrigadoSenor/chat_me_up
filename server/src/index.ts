@@ -17,6 +17,7 @@ import { MemberResolver } from "./resolvers/member";
 import { MessageResolver } from "./resolvers/message";
 import { ConversationResolver } from "./resolvers/conversation";
 import { UserResolver } from "./resolvers/user";
+import { FriendResolver } from "./resolvers/friends";
 
 dotenv.config();
 
@@ -39,6 +40,7 @@ const main = async () => {
       ConversationResolver,
       UserResolver,
       MemberResolver,
+      FriendResolver,
     ],
     emitSchemaFile: path.resolve("./server.gql"),
     validate: false,

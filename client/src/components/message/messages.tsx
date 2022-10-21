@@ -58,5 +58,10 @@ export const Messages = () => {
   if (loading) return <p>"Loading...";</p>;
   if (error) return <p>`Error! ${error.message}`</p>;
 
-  return memoMessages;
+  return (
+    <>
+      <h1>MESSAGES</h1>
+      {memoMessages}
+    </>
+  );
 };

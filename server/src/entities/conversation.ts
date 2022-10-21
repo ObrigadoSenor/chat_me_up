@@ -2,7 +2,7 @@
 import { ObjectType, Field } from "type-graphql";
 
 @ObjectType()
-export class ConversationBasicBasicType {
+export class ConversationBasicType {
   @Field()
   _id: string;
   @Field()

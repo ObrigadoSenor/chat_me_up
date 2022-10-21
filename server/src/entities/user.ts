@@ -1,6 +1,6 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import { ObjectType, Field } from "type-graphql";
-import { ConversationBasicBasicType } from "./conversation";
+import { FriendsBasicType } from "./friends";
+import { Field, ObjectType } from "type-graphql";
+import { ConversationBasicType } from "./conversation";
 
 @ObjectType()
 export class UserBasicType {
@@ -10,8 +10,10 @@ export class UserBasicType {
   name: string;
   @Field()
   email: string;
-  @Field(() => [ConversationBasicBasicType])
-  conversations: [ConversationBasicBasicType];
+  @Field(() => [ConversationBasicType])
+  conversations: [ConversationBasicType];
+  @Field()
+  friends: FriendsBasicType;
 }
 
 @ObjectType()

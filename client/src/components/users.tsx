@@ -35,10 +35,10 @@ const USER_DELETE_SUBSCRIPTION = gql`
 `;
 
 interface UserProps {
-  toogleUserInConversation: (_userId: UserType['_id']) => void;
+  onUserClick: (_userId: UserType['_id']) => void;
 }
 
-export const Users = ({ toogleUserInConversation }: UserProps) => {
+export const Users = ({ onUserClick }: UserProps) => {
   const { details } = useAppSelector(({ auth }) => auth);
   const { loading, error, data, subscribeToMore } = useQuery(GET_USERS);
 
@@ -76,7 +76,9 @@ export const Users = ({ toogleUserInConversation }: UserProps) => {
     };
   }, []);
   const { getUsers = [] } = data || {};
+
   const otherUsers = useMemo(() => reject(({ _id }) => _id === details?._id, getUsers), [getUsers]);
+
   const memoUsers = useMemo(
     () =>
       otherUsers.map(({ _id, name, email }: UserType) => (
@@ -84,7 +86,7 @@ export const Users = ({ toogleUserInConversation }: UserProps) => {
           <p>
             {name} : {email}
           </p>
-          <input type="checkbox" onChange={() => toogleUserInConversation(_id)} />
+          <input type="checkbox" onChange={() => onUserClick(_id)} />
         </div>
       )),
     [otherUsers],

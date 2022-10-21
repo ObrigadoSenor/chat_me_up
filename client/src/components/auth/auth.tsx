@@ -4,10 +4,13 @@ import { SignOut } from './signOut';
 import { SignUp } from './signUp';
 
 export const Auth = () => {
-  const { loggedIn } = useAppSelector(({ auth }) => auth);
+  const { loggedIn, details } = useAppSelector(({ auth }) => auth);
 
   return loggedIn ? (
-    <SignOut />
+    <>
+      <SignOut />
+      {details?.name}
+    </>
   ) : (
     <>
       <SignUp />
