@@ -115,5 +115,10 @@ export const Members = () => {
   if (loading) return <p>"Loading...";</p>;
   if (error) return <p>`Error! ${error.message}`</p>;
 
-  return memoMembers;
+  return (
+    <>
+      <h1>MEMBERS</h1>
+      {memoMembers}
+    </>
+  );
 };

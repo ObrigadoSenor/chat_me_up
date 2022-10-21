@@ -12,8 +12,9 @@ export const GET_USER = gql`
   }
 `;
 
-export const useUserData = (_id: UserType['_id']) => {
+export const useUser = (_id: UserType['_id']) => {
   const { loading, error, data } = useQuery<{ getUser: UserBasicType }>(GET_USER, { variables: { _id } });
+
   const getUser = useMemo(() => data?.getUser, [data]);
 
   return { ...getUser };

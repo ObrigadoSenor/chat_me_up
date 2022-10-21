@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react';
 import styled from 'styled-components';
 import { NewConversation } from './components/conversation/newConversation';
+import { Friends } from './components/friend/friends';
 import GlobalStyle from './globalStyle';
 import { useAppSelector } from './store/store';
 
@@ -36,6 +37,8 @@ export const App = () => {
       </Suspense>
       {loggedIn ? (
         <Content>
+          <Friends />
+
           <NewConversation />
           <Suspense fallback={<div>Loading...</div>}>
             <Conversations />

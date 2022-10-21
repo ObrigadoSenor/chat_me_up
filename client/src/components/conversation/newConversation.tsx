@@ -1,6 +1,7 @@
 import { gql, useMutation } from '@apollo/client';
 import { includes, reject } from 'ramda';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { useFriends } from '../../hooks/useFriends';
 import { useAppSelector } from '../../store/store';
 import { Users } from '../users';
 
@@ -19,7 +20,7 @@ export const NewConversation = () => {
   const { details } = useAppSelector(({ auth }) => auth);
   const [name, setName] = useState<string>('');
   const [membersIds, setMembersIds] = useState<string[]>([]);
-
+  const { friends } = useFriends(details ? details?._id : '');
   const [createConversation] = useMutation(ADD_CONVERSATION);
   const handleSend = async () => {
     await createConversation({ variables: { name, membersIds, _userId: details?._id } })
@@ -33,10 +34,22 @@ export const NewConversation = () => {
     );
   };
 
+  const memoFriends = useMemo(
+    () =>
+      friends.map((friend) => (
+        <div key={friend._id}>
+          {/* {friend._friendId} */}
+          <input type="checkbox" onChange={() => toggleMemberId(friend._id)} />
+        </div>
+      )),
+    [friends],
+  );
+
   return (
     <div>
+      <h1>NEW CONVERSATION</h1>
       <input type="text" defaultValue={name} onBlur={(e) => setName(e.target.value)}></input>
-      <Users toogleUserInConversation={(props) => toggleMemberId(props)} />
+      {memoFriends}
       <button onClick={() => handleSend()}>Create conversation</button>
     </div>
   );

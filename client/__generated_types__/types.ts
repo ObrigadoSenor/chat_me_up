@@ -12,7 +12,7 @@ export type Scalars = {
   Float: number;
 };
 
-export type ConversationBasicBasicType = {
+export type ConversationBasicType = {
   _conversationId: Scalars['String'];
   _id: Scalars['String'];
 };
@@ -22,6 +22,24 @@ export type ConversationType = {
   _membersId: Scalars['String'];
   _messagesId: Scalars['String'];
   name: Scalars['String'];
+};
+
+export type FriendType = {
+  _id: Scalars['String'];
+  _userId: Scalars['String'];
+};
+
+export type FriendsBasicType = {
+  _id: Scalars['String'];
+  _userId: Scalars['String'];
+};
+
+export type FriendsType = {
+  _id: Scalars['String'];
+  _userId: Scalars['String'];
+  accepted: Array<FriendType>;
+  pending: Array<FriendType>;
+  requests: Array<FriendType>;
 };
 
 export type MemberType = {
@@ -49,7 +67,9 @@ export type Mutation = {
   deleteUser: UserType;
   loginUser: UserType;
   removeMember: MemberType;
+  sendFriendRequest: FriendType;
   sendMessage: MessageType;
+  updateFriendRequest: FriendType;
 };
 
 
@@ -96,14 +116,34 @@ export type MutationRemoveMemberArgs = {
 };
 
 
+export type MutationSendFriendRequestArgs = {
+  _friendId: Scalars['String'];
+  _userId: Scalars['String'];
+  friendSubType?: InputMaybe<Scalars['String']>;
+  userSubType?: InputMaybe<Scalars['String']>;
+};
+
+
 export type MutationSendMessageArgs = {
   _conversationId: Scalars['String'];
   _userId: Scalars['String'];
   message: Scalars['String'];
 };
 
+
+export type MutationUpdateFriendRequestArgs = {
+  _friendId: Scalars['String'];
+  _userId: Scalars['String'];
+  friendSubTypeFrom?: InputMaybe<Scalars['String']>;
+  friendSubTypeTo?: InputMaybe<Scalars['String']>;
+  userSubTypeFrom?: InputMaybe<Scalars['String']>;
+  userSubTypeTo?: InputMaybe<Scalars['String']>;
+};
+
 export type Query = {
   getConversations: Array<ConversationType>;
+  getFriends: Array<FriendType>;
+  getFriendsNode: FriendsType;
   getMembers: Array<MemberType>;
   getMessages: MessagesType;
   getUser: UserType;
@@ -115,6 +155,17 @@ export type Query = {
 
 
 export type QueryGetConversationsArgs = {
+  _userId: Scalars['String'];
+};
+
+
+export type QueryGetFriendsArgs = {
+  _userId: Scalars['String'];
+  type?: InputMaybe<Scalars['String']>;
+};
+
+
+export type QueryGetFriendsNodeArgs = {
   _userId: Scalars['String'];
 };
 
@@ -151,6 +202,7 @@ export type QueryValidTokenArgs = {
 export type Subscription = {
   conversationAdded: ConversationType;
   conversationDeleted: ConversationType;
+  friendRequestSent: Array<FriendsType>;
   memberAdded: MemberType;
   memberRemoved: MemberType;
   messageSent: MessageType;
@@ -160,16 +212,18 @@ export type Subscription = {
 
 export type UserBasicType = {
   _id: Scalars['String'];
-  conversations: Array<ConversationBasicBasicType>;
+  conversations: Array<ConversationBasicType>;
   email: Scalars['String'];
+  friends: FriendsBasicType;
   name: Scalars['String'];
 };
 
 export type UserType = {
   _id: Scalars['String'];
-  conversations: Array<ConversationBasicBasicType>;
+  conversations: Array<ConversationBasicType>;
   date: Scalars['String'];
   email: Scalars['String'];
+  friends: FriendsBasicType;
   hash: Scalars['String'];
   name: Scalars['String'];
   salt: Scalars['String'];

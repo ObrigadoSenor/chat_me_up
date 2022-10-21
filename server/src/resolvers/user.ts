@@ -21,6 +21,7 @@ import {
   UserType,
   ValidTokenType,
 } from "../entities/user";
+import { Friends } from "../models/friends";
 import { User, UserBasicModelType, UserModelType } from "../models/user";
 
 type idType = UserType["_id"];
@@ -83,14 +84,28 @@ export class UserResolver {
       return { code: 500, message: `Could'nt add user` };
     }
 
-    const userWithConversation = (await User.findOneAndUpdate(
+    const { _id: _friendsId } = await new Friends({
+      _userId: user._id,
+      pending: [],
+      requests: [],
+      accepted: [],
+    }).save();
+
+    const updateduser = (await User.findOneAndUpdate(
       { _id: user?._id },
-      { $set: { conversations: [] } },
+      {
+        $set: {
+          conversations: [],
+          friends: {
+            _userId: _friendsId,
+          },
+        },
+      },
       { returnDocument: "after" }
     )) as UserBasicModelType;
 
-    await publish(userWithConversation);
-    return userWithConversation;
+    await publish(updateduser);
+    return updateduser;
   }
 
   @Mutation(() => UserType)

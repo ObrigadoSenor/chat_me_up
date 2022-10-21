@@ -33,7 +33,6 @@ export class ConversationResolver {
     @Arg("_userId") _userId: userIdType
   ): Promise<ConversationModelType[] | Error> {
     const user = await User.findOne<UserModelType>({ _id: _userId });
-    console.log("user get convs: ", user);
 
     if (!user) {
       return { code: 500, message: `No user could be found` };
@@ -44,7 +43,6 @@ export class ConversationResolver {
         $in: map(({ _conversationId }) => _conversationId, user.conversations),
       },
     });
-    console.log("conversations", conversations);
 
     if (!conversations) {
       return { code: 500, message: `No conversations could be found` };
@@ -91,7 +89,7 @@ export class ConversationResolver {
       (_userId) => ({
         _userId,
       }),
-      membersIds
+      [...membersIds, _userId]
     );
 
     const { _id: _membersId } = await new Members({
@@ -136,13 +134,9 @@ export class ConversationResolver {
       { _conversationId: conversation._id },
       { returnDocument: "after" }
     );
-    console.log("members", members);
     if (members) {
       map(
         async ({ _userId, _id }) => {
-          console.log("_userId", _userId);
-          console.log("_id", _id);
-
           return await User.findOneAndUpdate(
             { _id: _userId },
             { $pull: { conversations: { _conversationId } } }

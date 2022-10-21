@@ -45,7 +45,6 @@ const Conversations = () => {
   const { loading, error, data, subscribeToMore } = useQuery(GET_CONVERSATIONS, {
     variables: { _userId: details?._id },
   });
-  console.log('data', data);
 
   useEffect(() => {
     const unsubFromAdd = subscribeToMore({
@@ -98,7 +97,12 @@ const Conversations = () => {
   if (loading) return <p>"Loading...";</p>;
   if (error) return <p>`Error! ${error.message}`</p>;
 
-  return memoConversations;
+  return (
+    <>
+      <h1>CONVERSATIONS</h1>
+      {memoConversations}
+    </>
+  );
 };
 
 export default Conversations;
