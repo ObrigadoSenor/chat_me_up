@@ -1,5 +1,5 @@
 import { gql, useQuery } from '@apollo/client';
-import { compose, filter, not, propEq } from 'ramda';
+import { compose, filter, includes, not, propEq } from 'ramda';
 import { useEffect, useMemo } from 'react';
 import { ConversationType } from '../../../__generated_types__/types';
 import { setConversationId } from '../../store/slices/conversation';
@@ -19,10 +19,13 @@ const GET_CONVERSATIONS = gql`
 const CONVERSATIONS_SUBSCRIPTION = gql`
   subscription OnNewConversation {
     conversationAdded {
-      _id
-      name
-      _membersId
-      _messagesId
+      data {
+        _id
+        name
+        _membersId
+        _messagesId
+      }
+      membersIds
     }
   }
 `;
@@ -30,10 +33,13 @@ const CONVERSATIONS_SUBSCRIPTION = gql`
 const CONVERSATIONS_DELETE_SUBSCRIPTION = gql`
   subscription OnDeleteConversation {
     conversationDeleted {
-      _id
-      name
-      _membersId
-      _messagesId
+      data {
+        _id
+        name
+        _membersId
+        _messagesId
+      }
+      membersIds
     }
   }
 `;
@@ -54,8 +60,14 @@ const Conversations = () => {
         if (!data) return prev;
 
         const { conversationAdded } = data;
+
+        if (includes(details?._id, conversationAdded.membersIds)) {
+          return {
+            getConversations: [...prev.getConversations, conversationAdded.data],
+          };
+        }
         return {
-          getConversations: [...prev.getConversations, conversationAdded],
+          getConversations: prev.getConversations,
         };
       },
     });
@@ -65,14 +77,21 @@ const Conversations = () => {
         const { data } = subscriptionData || {};
         if (!data) return prev;
         const { conversationDeleted } = data;
+
         const keppedConversations = filter(
-          compose(not, propEq('_id', conversationDeleted?._id)),
+          compose(not, propEq('_id', conversationDeleted.data?._id)),
           prev.getConversations || [],
         );
-        const removed = keppedConversations.length !== prev.getConversations.length;
-        removed && disaptch(setConversationId(null));
+
+        if (includes(details?._id, conversationDeleted.membersIds)) {
+          disaptch(setConversationId(null));
+
+          return {
+            getConversations: keppedConversations,
+          };
+        }
         return {
-          getConversations: removed ? keppedConversations : prev.getConversations,
+          getConversations: prev.getConversations,
         };
       },
     });

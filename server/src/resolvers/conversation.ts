@@ -13,7 +13,10 @@ import {
   Root,
   Subscription,
 } from "type-graphql";
-import { ConversationType } from "../entities/conversation";
+import {
+  ConversationReturnType,
+  ConversationType,
+} from "../entities/conversation";
 import { Error } from "../entities/error";
 import { MembersType, MemberType } from "../entities/member";
 import { ConversationModelType, Conversations } from "../models/conversation";
@@ -69,11 +72,12 @@ export class ConversationResolver {
 
   @Mutation(() => ConversationType)
   async addConversation(
-    @PubSub("OnNewConversation") publish: Publisher<ConversationModelType>,
+    @PubSub("OnNewConversation")
+    publish: Publisher<ConversationReturnType>,
     @Arg("name") name: nameType,
     @Arg("membersIds", () => [String]) membersIds: memberUserIdType[],
     @Arg("_userId") _userId: userIdType
-  ): Promise<ConversationModelType | Error> {
+  ): Promise<ConversationType | Error> {
     const conversationData = (await new Conversations({
       name,
       _messagesId: "placeholder",
@@ -85,11 +89,13 @@ export class ConversationResolver {
       _conversationId,
     }).save();
 
+    const memberAndUser = [...membersIds, _userId];
+
     const members = map(
       (_userId) => ({
         _userId,
       }),
-      [...membersIds, _userId]
+      memberAndUser
     );
 
     const { _id: _membersId } = await new Members({
@@ -103,29 +109,28 @@ export class ConversationResolver {
           { _id },
           { $push: { conversations: { _conversationId } } }
         ),
-      [...membersIds, _userId]
+      memberAndUser
     );
 
     const conversation = (await Conversations.findOneAndUpdate(
       { _id: _conversationId },
       { $set: { _messagesId, _membersId } },
       { returnDocument: "after" }
-    )) as ConversationModelType;
+    )) as ConversationType;
 
-    await publish(conversation);
+    await publish({ data: conversation, membersIds: memberAndUser });
     return conversation;
   }
 
   @Mutation(() => ConversationType)
   async deleteConversation(
-    @PubSub("OnDeleteConversation") publish: Publisher<ConversationModelType>,
+    @PubSub("OnDeleteConversation") publish: Publisher<ConversationReturnType>,
     @Arg("_conversationId") _conversationId: idType
-  ): Promise<ConversationModelType | Error> {
-    const conversation =
-      await Conversations.findOneAndRemove<ConversationModelType>(
-        { _id: _conversationId },
-        { returnDocument: "after" }
-      );
+  ): Promise<ConversationType | Error> {
+    const conversation = await Conversations.findOneAndRemove<ConversationType>(
+      { _id: _conversationId },
+      { returnDocument: "after" }
+    );
     if (!conversation) {
       return { code: 500, message: `No conversation was deleted` };
     }
@@ -136,7 +141,7 @@ export class ConversationResolver {
     );
     if (members) {
       map(
-        async ({ _userId, _id }) => {
+        async ({ _userId }) => {
           return await User.findOneAndUpdate(
             { _id: _userId },
             { $pull: { conversations: { _conversationId } } }
@@ -147,25 +152,29 @@ export class ConversationResolver {
       );
     }
 
-    await publish(conversation);
+    await publish({
+      data: conversation,
+      membersIds: map((member) => member._userId, members?.members || []),
+    });
     return conversation;
   }
 
-  @Subscription({
+  @Subscription(() => ConversationReturnType, {
     topics: "OnNewConversation",
   })
   conversationAdded(
-    @Root() props: HydratedDocument<ConversationType>
-  ): ConversationType {
+    @Root()
+    props: HydratedDocument<ConversationReturnType>
+  ): ConversationReturnType {
     return props;
   }
 
-  @Subscription({
+  @Subscription(() => ConversationReturnType, {
     topics: "OnDeleteConversation",
   })
   conversationDeleted(
-    @Root() props: HydratedDocument<ConversationType>
-  ): ConversationType {
+    @Root() props: HydratedDocument<ConversationReturnType>
+  ): ConversationReturnType {
     return props;
   }
 }

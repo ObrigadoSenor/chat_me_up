@@ -3,7 +3,7 @@ import { includes, reject } from 'ramda';
 import { useMemo, useState } from 'react';
 import { useFriends } from '../../hooks/useFriends';
 import { useAppSelector } from '../../store/store';
-import { Users } from '../users';
+import { NewConversationUser } from './newConversationUser';
 
 const ADD_CONVERSATION = gql`
   mutation addConversation($name: String!, $membersIds: [String!]!, $_userId: String!) {
@@ -20,7 +20,7 @@ export const NewConversation = () => {
   const { details } = useAppSelector(({ auth }) => auth);
   const [name, setName] = useState<string>('');
   const [membersIds, setMembersIds] = useState<string[]>([]);
-  const { friends } = useFriends(details ? details?._id : '');
+  const { friends } = useFriends(details?._id);
   const [createConversation] = useMutation(ADD_CONVERSATION);
   const handleSend = async () => {
     await createConversation({ variables: { name, membersIds, _userId: details?._id } })
@@ -36,11 +36,8 @@ export const NewConversation = () => {
 
   const memoFriends = useMemo(
     () =>
-      friends.map((friend) => (
-        <div key={friend._id}>
-          {/* {friend._friendId} */}
-          <input type="checkbox" onChange={() => toggleMemberId(friend._id)} />
-        </div>
+      friends?.accepted.map((friend) => (
+        <NewConversationUser key={friend._id} {...friend} toggleMemberId={toggleMemberId} />
       )),
     [friends],
   );

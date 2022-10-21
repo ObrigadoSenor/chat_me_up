@@ -5,15 +5,11 @@ import { useAppSelector } from '../../store/store';
 import { Message } from './message';
 
 const GET_MESSAGES = gql`
-  query getMessages($_conversationId: String!) {
-    getMessages(_conversationId: $_conversationId) {
+  query getMessage($_conversationId: String!) {
+    getMessage(_conversationId: $_conversationId) {
       _id
-      _conversationId
-      messages {
-        _id
-        _userId
-        message
-      }
+      _userId
+      message
     }
   }
 `;
@@ -40,19 +36,19 @@ export const Messages = () => {
 
         if (!data) return prev;
         const { messageSent } = data || {};
-        const { messages = [] } = prev?.getMessages || {};
+        const { getMessage = [] } = prev || {};
         return {
-          getMessages: [...messages, messageSent],
+          getMessage: [...getMessage, messageSent],
         };
       },
     });
     return () => unsub();
   }, []);
 
-  const { messages = [] } = data?.getMessages || {};
+  const { getMessage = [] } = data || {};
   const memoMessages = useMemo(
-    () => messages.map((props: MessageType) => <Message key={props._id} {...props} />),
-    [messages],
+    () => getMessage.map((props: MessageType) => <Message key={props._id} {...props} />),
+    [getMessage],
   );
 
   if (loading) return <p>"Loading...";</p>;

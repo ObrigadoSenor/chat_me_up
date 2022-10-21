@@ -1,37 +1,12 @@
-/* eslint-disable indent */
-import { gql, useMutation, useQuery, useSubscription } from '@apollo/client';
-import { filter, find, findIndex, flatten, includes, isEmpty, map, mergeAll, reject } from 'ramda';
+import { gql, useMutation } from '@apollo/client';
+import { findIndex, flatten, map, reject } from 'ramda';
 import { useMemo } from 'react';
 import styled from 'styled-components';
-import { FriendsType, FriendType, Query, Subscription, UserBasicType } from '../../../__generated_types__/types';
+import { FriendsType, FriendType, UserBasicType } from '../../../__generated_types__/types';
+import { useFriends } from '../../hooks/useFriends';
 import { useUsers } from '../../hooks/useUsers';
 import { useAppSelector } from '../../store/store';
 import { Friend } from './friend';
-
-const GET_FRIENDS_NODE = gql`
-  query getFriendsNode($_userId: String!) {
-    getFriendsNode(_userId: $_userId) {
-      _id
-      _userId
-      pending {
-        _id
-        _userId
-      }
-      requests {
-        _id
-        _userId
-      }
-      accepted {
-        _id
-        _userId
-      }
-      rejected {
-        _id
-        _userId
-      }
-    }
-  }
-`;
 
 const SEND_FRIEND_REQUEST = gql`
   mutation sendFriendRequest($_friendId: String!, $_userId: String!, $userSubType: String, $friendSubType: String) {
@@ -43,31 +18,6 @@ const SEND_FRIEND_REQUEST = gql`
     ) {
       _id
       _userId
-    }
-  }
-`;
-
-const FRIEND_REQUEST_SENT_SUBSCRIPTION = gql`
-  subscription OnNewFriendRequest {
-    friendRequestSent {
-      _id
-      _userId
-      pending {
-        _id
-        _userId
-      }
-      requests {
-        _id
-        _userId
-      }
-      accepted {
-        _id
-        _userId
-      }
-      rejected {
-        _id
-        _userId
-      }
     }
   }
 `;
@@ -127,21 +77,7 @@ export const Friends = () => {
   const users = useUsers();
   const { details } = useAppSelector(({ auth }) => auth);
 
-  const {
-    loading,
-    error,
-    data: initData,
-  } = useQuery<{ getFriendsNode: Query['getFriendsNode'] }>(GET_FRIENDS_NODE, {
-    variables: { _userId: details?._id },
-  });
-
-  const { data: subData } = useSubscription<{ friendRequestSent: Subscription['friendRequestSent'] }>(
-    FRIEND_REQUEST_SENT_SUBSCRIPTION,
-  );
-
-  const filteredSubData = mergeAll(filter(({ _userId }) => _userId === details?._id, subData?.friendRequestSent || []));
-
-  const data = !isEmpty(filteredSubData) ? filteredSubData : initData?.getFriendsNode;
+  const { friends, loading, error } = useFriends(details?._id);
 
   const [sendFriendRequest] = useMutation(SEND_FRIEND_REQUEST);
 
@@ -151,8 +87,8 @@ export const Friends = () => {
       .catch((err) => console.log('err', err));
   };
 
-  const renderFriend = (friends: FriendType[], type: FriendsKeyType) =>
-    friends.map((props) => {
+  const renderFriend = (friendsArray: FriendType[], type: FriendsKeyType) =>
+    friendsArray.map((props) => {
       return (
         <FriendsInnerLi key={props._id}>
           <Friend _loggedInId={details?._id} type={type} {...props} />
@@ -165,28 +101,28 @@ export const Friends = () => {
       <FriendsOuterUl>
         <FriendsOuterLi>
           <h4>Accepted</h4>
-          {data?.accepted ? <FriendsInnerUl>{renderFriend(data.accepted, 'accepted')}</FriendsInnerUl> : null}
+          {friends?.accepted ? <FriendsInnerUl>{renderFriend(friends.accepted, 'accepted')}</FriendsInnerUl> : null}
         </FriendsOuterLi>
         <FriendsOuterLi>
           <h4>Pending</h4>
-          {data?.pending ? <FriendsInnerUl>{renderFriend(data.pending, 'pending')}</FriendsInnerUl> : null}
+          {friends?.pending ? <FriendsInnerUl>{renderFriend(friends.pending, 'pending')}</FriendsInnerUl> : null}
         </FriendsOuterLi>
         <FriendsOuterLi>
           <h4>Requests</h4>
-          {data?.requests ? <FriendsInnerUl>{renderFriend(data.requests, 'requests')}</FriendsInnerUl> : null}
+          {friends?.requests ? <FriendsInnerUl>{renderFriend(friends.requests, 'requests')}</FriendsInnerUl> : null}
         </FriendsOuterLi>
         <FriendsOuterLi>
           <h4>Rejected</h4>
-          {data?.rejected ? <FriendsInnerUl>{renderFriend(data.rejected, 'rejected')}</FriendsInnerUl> : null}
+          {friends?.rejected ? <FriendsInnerUl>{renderFriend(friends.rejected, 'rejected')}</FriendsInnerUl> : null}
         </FriendsOuterLi>
       </FriendsOuterUl>
     ),
-    [data, details],
+    [friends, details],
   );
 
   const allFriends = useMemo(
-    () => (data !== undefined ? flatten([data.accepted, data.pending, data.requests]) : []),
-    [data],
+    () => (friends !== undefined ? flatten([friends.accepted, friends.pending, friends.requests]) : []),
+    [friends],
   );
 
   const allFriendsIds = useMemo(() => map((props) => props?._userId, allFriends), [allFriends]);
@@ -200,7 +136,7 @@ export const Friends = () => {
     () =>
       usersExcludedLoggedIn.map(({ _id, name, email }) => {
         const checkIfAdded = (arr: FriendType[]) => findIndex((req) => req._userId === _id, arr) > -1;
-        const { requests = [], pending = [], accepted = [], rejected = [] } = data || {};
+        const { requests = [], pending = [], accepted = [], rejected = [] } = friends || {};
 
         const isRequested = checkIfAdded(requests);
         const isPending = checkIfAdded(pending);

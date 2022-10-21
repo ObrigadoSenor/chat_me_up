@@ -20,3 +20,11 @@ export class ConversationType {
   @Field()
   _messagesId: string;
 }
+
+@ObjectType()
+export class ConversationReturnType {
+  @Field()
+  data: ConversationType;
+  @Field(() => [String])
+  membersIds: string[];
+}

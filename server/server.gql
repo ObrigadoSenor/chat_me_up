@@ -8,6 +8,11 @@ type ConversationBasicType {
   _id: String!
 }
 
+type ConversationReturnType {
+  data: ConversationType!
+  membersIds: [String!]!
+}
+
 type ConversationType {
   _id: String!
   _membersId: String!
@@ -45,12 +50,6 @@ type MessageType {
   message: String!
 }
 
-type MessagesType {
-  _conversationId: String!
-  _id: String!
-  messages: [MessageType!]!
-}
-
 type Mutation {
   addConversation(_userId: String!, membersIds: [String!]!, name: String!): ConversationType!
   addMember(_conversationId: String!, _userId: String!): MemberType!
@@ -69,7 +68,7 @@ type Query {
   getFriends(_userId: String!, type: String): [FriendType!]!
   getFriendsNode(_userId: String!): FriendsType!
   getMembers(_conversationId: String!): [MemberType!]!
-  getMessages(_conversationId: String!): MessagesType!
+  getMessage(_conversationId: String!): [MessageType!]!
   getUser(_id: String!): UserType!
   getUserByToken(token: String!): UserType!
   getUsers: [UserType!]!
@@ -78,8 +77,8 @@ type Query {
 }
 
 type Subscription {
-  conversationAdded: ConversationType!
-  conversationDeleted: ConversationType!
+  conversationAdded: ConversationReturnType!
+  conversationDeleted: ConversationReturnType!
   friendRequestSent: [FriendsType!]!
   memberAdded: MemberType!
   memberRemoved: MemberType!

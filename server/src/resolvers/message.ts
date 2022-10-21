@@ -1,4 +1,5 @@
 import { HydratedDocument } from "mongoose";
+import { last } from "ramda";
 import {
   Arg,
   Mutation,
@@ -9,17 +10,12 @@ import {
   Root,
   Subscription,
 } from "type-graphql";
-import { last } from "ramda";
 
 import { Error } from "../entities/error";
 import { MessagesType, MessageType } from "../entities/message";
 
 import { ConversationType } from "../entities/conversation";
-import {
-  Messages,
-  MessagesModelType,
-  MessageModelType,
-} from "../models/message";
+import { MessageModelType, Messages } from "../models/message";
 
 type conversationIdType = ConversationType["_id"];
 type userIdType = MessageType["_userId"];
@@ -27,18 +23,19 @@ type messageType = MessageType["message"];
 
 @Resolver()
 export class MessageResolver {
-  @Query(() => MessagesType)
-  async getMessages(
+  @Query(() => [MessageType])
+  async getMessage(
     @Arg("_conversationId") _conversationId: conversationIdType
-  ): Promise<MessagesModelType | Error> {
-    const messages = await Messages.findOne<MessagesModelType>({
+  ): Promise<[MessageType] | Error> {
+    const messages = await Messages.findOne<MessagesType>({
       _conversationId,
     });
+    console.log("messages", messages);
 
     if (!messages) {
       return { code: 500, message: `No chat with id ${_conversationId}` };
     }
-    return messages;
+    return messages.messages;
   }
 
   @Mutation(() => MessageType)

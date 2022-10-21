@@ -1,27 +1,77 @@
-import { gql, useQuery } from '@apollo/client';
+import { gql, useQuery, useSubscription } from '@apollo/client';
+import { filter, isEmpty, mergeAll } from 'ramda';
 import { useMemo } from 'react';
-import { FriendType, UserType } from '../../__generated_types__/types';
+import { Query, Subscription, UserType } from '../../__generated_types__/types';
 
-const GET_FRIENDS = gql`
-  query getFriends($_userId: String!) {
-    getFriends(_userId: $_userId) {
+const GET_FRIENDS_NODE = gql`
+  query getFriendsNode($_userId: String!) {
+    getFriendsNode(_userId: $_userId) {
       _id
       _userId
+      pending {
+        _id
+        _userId
+      }
+      requests {
+        _id
+        _userId
+      }
+      accepted {
+        _id
+        _userId
+      }
+      rejected {
+        _id
+        _userId
+      }
     }
   }
 `;
 
-export const useFriends = (_userId: UserType['_id']) => {
-  const { loading, error, data, subscribeToMore } = useQuery<{ getFriends: FriendType[] }>(GET_FRIENDS, {
+const FRIEND_REQUEST_SENT_SUBSCRIPTION = gql`
+  subscription OnNewFriendRequest {
+    friendRequestSent {
+      _id
+      _userId
+      pending {
+        _id
+        _userId
+      }
+      requests {
+        _id
+        _userId
+      }
+      accepted {
+        _id
+        _userId
+      }
+      rejected {
+        _id
+        _userId
+      }
+    }
+  }
+`;
+
+export const useFriends = (_userId?: UserType['_id']) => {
+  const {
+    loading,
+    error,
+    data: initData,
+  } = useQuery<{ getFriendsNode: Query['getFriendsNode'] }>(GET_FRIENDS_NODE, {
     variables: { _userId },
   });
 
-  const friends = useMemo(() => data?.getFriends, [data]) || [];
+  const { data: subData } = useSubscription<{ friendRequestSent: Subscription['friendRequestSent'] }>(
+    FRIEND_REQUEST_SENT_SUBSCRIPTION,
+  );
 
-  // const pending = filter(({ status }) => status === 'pending', friends);
-  // const accepted = filter(({ status }) => status === 'accepted', friends);
-  // const declined = filter(({ status }) => status === 'declined', friends);
-  // const removed = filter(({ status }) => status === 'declined', friends);
+  const filteredSubData = mergeAll(filter((friend) => friend._userId === _userId, subData?.friendRequestSent || []));
 
-  return { friends };
+  const friends = useMemo(
+    () => (!isEmpty(filteredSubData) ? filteredSubData : initData?.getFriendsNode),
+    [filteredSubData, initData],
+  );
+
+  return { friends, loading, error };
 };
