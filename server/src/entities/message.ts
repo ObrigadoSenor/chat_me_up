@@ -9,6 +9,10 @@ export class MessageType {
   _userId: string;
   @Field()
   message: string;
+  @Field()
+  createdAt: number;
+  @Field()
+  updatedAt: number;
 }
 
 @ObjectType()

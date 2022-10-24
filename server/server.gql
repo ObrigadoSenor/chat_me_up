@@ -47,7 +47,15 @@ type MemberType {
 type MessageType {
   _id: String!
   _userId: String!
+  createdAt: Float!
   message: String!
+  updatedAt: Float!
+}
+
+type MessagesType {
+  _conversationId: String!
+  _id: String!
+  messages: [MessageType!]!
 }
 
 type Mutation {
@@ -69,6 +77,7 @@ type Query {
   getFriendsNode(_userId: String!): FriendsType!
   getMembers(_conversationId: String!): [MemberType!]!
   getMessage(_conversationId: String!): [MessageType!]!
+  getMessages(_messagesId: String!): MessagesType!
   getUser(_id: String!): UserType!
   getUserByToken(token: String!): UserType!
   getUsers: [UserType!]!
@@ -82,7 +91,7 @@ type Subscription {
   friendRequestSent: [FriendsType!]!
   memberAdded: MemberType!
   memberRemoved: MemberType!
-  messageSent: MessageType!
+  messageSent: MessagesType!
   userAdded: UserBasicType!
   userDeleted: UserType!
 }

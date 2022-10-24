@@ -1,5 +1,7 @@
 import styled from 'styled-components';
 import GlobalStyle from './globalStyle';
+import globalIcons from './globalIcons';
+
 import { Routes } from './routes';
 
 const Container = styled.div`
@@ -15,6 +17,10 @@ const Content = styled.div`
   margin-top: 70px;
   padding: 2rem;
 `;
+
+{
+  globalIcons;
+}
 
 export const App = () => {
   return (

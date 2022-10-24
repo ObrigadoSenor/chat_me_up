@@ -1,9 +1,12 @@
-import { gql, useQuery } from '@apollo/client';
+import { gql, useMutation, useQuery } from '@apollo/client';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { compose, filter, includes, not, propEq } from 'ramda';
 import { useEffect, useMemo } from 'react';
+import styled from 'styled-components';
 import { ConversationType } from '../../../__generated_types__/types';
 import { setConversationId } from '../../store/slices/conversation';
 import { useAppDispatch, useAppSelector } from '../../store/store';
+import ConversationsItem from './conversationsItem';
 
 const GET_CONVERSATIONS = gql`
   query getConversations($_userId: String!) {
@@ -12,6 +15,15 @@ const GET_CONVERSATIONS = gql`
       name
       _membersId
       _messagesId
+    }
+  }
+`;
+
+const DELETE_CONVERSATION = gql`
+  mutation deleteConversation($_conversationId: String!) {
+    deleteConversation(_conversationId: $_conversationId) {
+      _id
+      name
     }
   }
 `;
@@ -44,6 +56,16 @@ const CONVERSATIONS_DELETE_SUBSCRIPTION = gql`
   }
 `;
 
+const ConversationsContainer = styled.ul`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  list-style-type: none;
+  width: 30%;
+  padding: 0;
+`;
+
 const Conversations = () => {
   const disaptch = useAppDispatch();
   const { details } = useAppSelector(({ auth }) => auth);
@@ -51,6 +73,14 @@ const Conversations = () => {
   const { loading, error, data, subscribeToMore } = useQuery(GET_CONVERSATIONS, {
     variables: { _userId: details?._id },
   });
+
+  const [deleteConversation] = useMutation(DELETE_CONVERSATION);
+
+  const handleDelete = async (_conversationId: ConversationType['_id']) => {
+    await deleteConversation({ variables: { _conversationId } })
+      .then(() => {})
+      .catch((err) => console.log('err', err));
+  };
 
   useEffect(() => {
     const unsubFromAdd = subscribeToMore({
@@ -104,12 +134,7 @@ const Conversations = () => {
   const { getConversations = [] } = data || {};
 
   const memoConversations = useMemo(
-    () =>
-      getConversations.map(({ _id, name }: ConversationType) => (
-        <div key={_id}>
-          <button onClick={() => disaptch(setConversationId(_id))}>{name}</button>
-        </div>
-      )),
+    () => getConversations.map((props: ConversationType) => <ConversationsItem key={props._id} {...props} />),
     [getConversations],
   );
 
@@ -119,7 +144,7 @@ const Conversations = () => {
   return (
     <>
       <h1>CONVERSATIONS</h1>
-      {memoConversations}
+      <ConversationsContainer>{memoConversations}</ConversationsContainer>
     </>
   );
 };

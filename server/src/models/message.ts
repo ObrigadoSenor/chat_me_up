@@ -1,16 +1,19 @@
 import { Document, model, Schema } from "mongoose";
 import { MessagesType, MessageType } from "../entities/message";
 
-const MessageSchema = new Schema({
-  message: {
-    type: String,
-    required: true,
+const MessageSchema = new Schema(
+  {
+    message: {
+      type: String,
+      required: true,
+    },
+    _userId: {
+      type: String,
+      required: true,
+    },
   },
-  _userId: {
-    type: String,
-    required: true,
-  },
-});
+  { timestamps: true }
+);
 
 export const MessagesSchema = new Schema({
   _conversationId: {

@@ -56,7 +56,15 @@ export type MemberType = {
 export type MessageType = {
   _id: Scalars['String'];
   _userId: Scalars['String'];
+  createdAt: Scalars['Float'];
   message: Scalars['String'];
+  updatedAt: Scalars['Float'];
+};
+
+export type MessagesType = {
+  _conversationId: Scalars['String'];
+  _id: Scalars['String'];
+  messages: Array<MessageType>;
 };
 
 export type Mutation = {
@@ -146,6 +154,7 @@ export type Query = {
   getFriendsNode: FriendsType;
   getMembers: Array<MemberType>;
   getMessage: Array<MessageType>;
+  getMessages: MessagesType;
   getUser: UserType;
   getUserByToken: UserType;
   getUsers: Array<UserType>;
@@ -180,6 +189,11 @@ export type QueryGetMessageArgs = {
 };
 
 
+export type QueryGetMessagesArgs = {
+  _messagesId: Scalars['String'];
+};
+
+
 export type QueryGetUserArgs = {
   _id: Scalars['String'];
 };
@@ -205,7 +219,7 @@ export type Subscription = {
   friendRequestSent: Array<FriendsType>;
   memberAdded: MemberType;
   memberRemoved: MemberType;
-  messageSent: MessageType;
+  messageSent: MessagesType;
   userAdded: UserBasicType;
   userDeleted: UserType;
 };

@@ -1,5 +1,7 @@
 import { gql, useMutation } from '@apollo/client';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useState } from 'react';
+import styled from 'styled-components';
 import { useAppSelector } from '../../store/store';
 
 const SEND_MESSAGE = gql`
@@ -9,6 +11,24 @@ const SEND_MESSAGE = gql`
       _userId
       message
     }
+  }
+`;
+
+const SendMessagesContainer = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-direction: row;
+  padding: 1rem 2rem;
+  width: 100%;
+  box-sizing: border-box;
+  background-color: rgba(30, 30, 30, 0.75);
+  border-bottom-right-radius: 0.5rem;
+  border-bottom-left-radius: 0.5rem;
+  color: white;
+  & > input {
+    width: 100%;
+    margin-right: 2rem;
   }
 `;
 
@@ -28,9 +48,9 @@ export const SendMessage = () => {
   };
 
   return (
-    <div>
+    <SendMessagesContainer>
       <input type="text" value={message} onChange={(e) => setMessage(e.target.value)}></input>
-      <button onClick={handleSend}>Create message</button>
-    </div>
+      <FontAwesomeIcon onClick={handleSend} icon="paper-plane" />
+    </SendMessagesContainer>
   );
 };
