@@ -3,6 +3,11 @@
 # !!!   DO NOT MODIFY THIS FILE BY YOURSELF   !!!
 # -----------------------------------------------
 
+type ConversationAdminType {
+  _adminId: String!
+  _id: String!
+}
+
 type ConversationBasicType {
   _conversationId: String!
   _id: String!
@@ -14,10 +19,11 @@ type ConversationReturnType {
 }
 
 type ConversationType {
+  _adminsIds: [ConversationAdminType!]!
   _id: String!
   _membersId: String!
   _messagesId: String!
-  name: String!
+  name: String
 }
 
 type FriendType {
@@ -37,6 +43,11 @@ type FriendsType {
   pending: [FriendType!]!
   rejected: [FriendType!]!
   requests: [FriendType!]!
+}
+
+type MemberLeaveType {
+  _conversationId: String!
+  _userId: String!
 }
 
 type MemberType {
@@ -59,16 +70,17 @@ type MessagesType {
 }
 
 type Mutation {
-  addConversation(_userId: String!, membersIds: [String!]!, name: String!): ConversationType!
+  addConversation(_userId: String!, membersIds: [String!]!): ConversationType!
   addMember(_conversationId: String!, _userId: String!): MemberType!
   addUser(confirmPassword: String!, email: String!, name: String!, password: String!): UserType!
   deleteConversation(_conversationId: String!): ConversationType!
   deleteUser(_id: String!): UserType!
   loginUser(email: String!, password: String!): UserType!
-  removeMember(_conversationId: String!, _userId: String!): MemberType!
+  removeMember(_conversationId: String!, _userId: String!): MemberLeaveType!
   sendFriendRequest(_friendId: String!, _userId: String!, friendSubType: String, userSubType: String): FriendType!
   sendMessage(_conversationId: String!, _userId: String!, message: String!): MessageType!
   updateFriendRequest(_friendId: String!, _userId: String!, friendSubTypeFrom: String, friendSubTypeTo: String, userSubTypeFrom: String, userSubTypeTo: String): FriendType!
+  updateNameOfConversation(_conversationId: String!, name: String!): ConversationType!
 }
 
 type Query {
@@ -88,9 +100,10 @@ type Query {
 type Subscription {
   conversationAdded: ConversationReturnType!
   conversationDeleted: ConversationReturnType!
+  conversationNameChange: ConversationType!
   friendRequestSent: [FriendsType!]!
   memberAdded: MemberType!
-  memberRemoved: MemberType!
+  memberRemoved: MemberLeaveType!
   messageSent: MessagesType!
   userAdded: UserBasicType!
   userDeleted: UserType!

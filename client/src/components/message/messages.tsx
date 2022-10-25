@@ -1,37 +1,9 @@
-import { gql, useQuery, useSubscription } from '@apollo/client';
 import dayjs from 'dayjs';
-import { last, reverse } from 'ramda';
 import { Fragment, useMemo } from 'react';
 import styled from 'styled-components';
-import { Query, Subscription } from '../../../__generated_types__/types';
+import { MessagesType } from '../../../__generated_types__/types';
 import { useAppSelector } from '../../store/store';
 import { Message } from './message';
-
-const GET_MESSAGES = gql`
-  query getMessage($_conversationId: String!) {
-    getMessage(_conversationId: $_conversationId) {
-      _id
-      _userId
-      message
-      createdAt
-    }
-  }
-`;
-
-export const MESSAGES_SUBSCRIPTION = gql`
-  subscription OnNewMessage {
-    messageSent {
-      _id
-      _conversationId
-      messages {
-        _id
-        _userId
-        message
-        createdAt
-      }
-    }
-  }
-`;
 
 const MessagesUl = styled.ul`
   display: flex;
@@ -49,37 +21,16 @@ const MessagesDay = styled.span`
   margin-top: 0.5rem;
 `;
 
-export const Messages = () => {
-  const { enteredConversationId: _conversationId, details } = useAppSelector(({ conversation, auth }) => ({
-    ...conversation,
-    ...auth,
-  }));
-  const {
-    loading,
-    error,
-    data: initData,
-  } = useQuery<{ getMessage: Query['getMessage'] }>(GET_MESSAGES, {
-    variables: { _conversationId },
-  });
+export const Messages = ({ messages }: Pick<MessagesType, 'messages'>) => {
+  const { details } = useAppSelector(({ auth }) => auth);
 
-  const { data: subData } = useSubscription<{ messageSent: Subscription['messageSent'] }>(MESSAGES_SUBSCRIPTION);
-  const { getMessage = [] } = initData || {};
-
-  const messages = useMemo(
-    () =>
-      subData === undefined || subData.messageSent._conversationId !== _conversationId
-        ? getMessage
-        : subData.messageSent.messages,
-    [subData, getMessage],
-  );
   let messageShowTimeIndex = 0;
-  const revMessage = reverse(messages);
 
   const memoMessages = useMemo(
     () =>
-      revMessage.map((props, index) => {
+      messages.map((props, index) => {
         const { createdAt } = props || {};
-        const { createdAt: lastCreatedAt } = revMessage[messageShowTimeIndex] || {};
+        const { createdAt: lastCreatedAt } = messages[messageShowTimeIndex] || {};
 
         let showDate;
 
@@ -97,11 +48,8 @@ export const Messages = () => {
           </Fragment>
         );
       }),
-    [revMessage],
+    [messages],
   );
-
-  if (loading) return <p>"Loading...";</p>;
-  if (error) return <p>`Error! ${error.message}`</p>;
 
   return <MessagesUl>{memoMessages}</MessagesUl>;
 };

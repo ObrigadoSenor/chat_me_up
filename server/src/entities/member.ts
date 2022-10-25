@@ -16,3 +16,11 @@ export class MembersType {
   @Field(() => [MemberType])
   members: [MemberType];
 }
+
+@ObjectType()
+export class MemberLeaveType {
+  @Field()
+  _userId: string;
+  @Field()
+  _conversationId: string;
+}

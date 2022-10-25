@@ -10,15 +10,25 @@ export class ConversationBasicType {
 }
 
 @ObjectType()
-export class ConversationType {
+export class ConversationAdminType {
   @Field()
   _id: string;
   @Field()
-  name: string;
+  _adminId: string;
+}
+
+@ObjectType()
+export class ConversationType {
+  @Field()
+  _id: string;
+  @Field({ nullable: true })
+  name?: string;
   @Field()
   _membersId: string;
   @Field()
   _messagesId: string;
+  @Field(() => [ConversationAdminType])
+  _adminsIds: [ConversationAdminType];
 }
 
 @ObjectType()

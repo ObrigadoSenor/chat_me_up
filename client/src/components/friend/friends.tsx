@@ -1,4 +1,4 @@
-import { gql, useMutation } from '@apollo/client';
+import { useMutation } from '@apollo/client';
 import { findIndex, flatten, map, reject } from 'ramda';
 import { useMemo } from 'react';
 import styled from 'styled-components';
@@ -7,20 +7,7 @@ import { useFriends } from '../../hooks/useFriends';
 import { useUsers } from '../../hooks/useUsers';
 import { useAppSelector } from '../../store/store';
 import { Friend } from './friend';
-
-const SEND_FRIEND_REQUEST = gql`
-  mutation sendFriendRequest($_friendId: String!, $_userId: String!, $userSubType: String, $friendSubType: String) {
-    sendFriendRequest(
-      _friendId: $_friendId
-      _userId: $_userId
-      userSubType: $userSubType
-      friendSubType: $friendSubType
-    ) {
-      _id
-      _userId
-    }
-  }
-`;
+import { SEND_FRIEND_REQUEST } from './queries';
 
 const FriendsOuterUl = styled.ul`
   display: flex;

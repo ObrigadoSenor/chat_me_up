@@ -1,32 +1,10 @@
 /* eslint-disable indent */
-import { gql, useMutation } from '@apollo/client';
+import { useMutation } from '@apollo/client';
 import styled from 'styled-components';
 import { FriendType, UserBasicType, UserType } from '../../../__generated_types__/types';
 import { useUser } from '../../hooks/useUser';
 import { FriendsKeyType } from './friends';
-
-const UPDATE_FRIEND_REQUEST = gql`
-  mutation updateFriendRequest(
-    $_friendId: String!
-    $_userId: String!
-    $userSubTypeFrom: String
-    $friendSubTypeFrom: String
-    $userSubTypeTo: String
-    $friendSubTypeTo: String
-  ) {
-    updateFriendRequest(
-      _friendId: $_friendId
-      _userId: $_userId
-      userSubTypeFrom: $userSubTypeFrom
-      friendSubTypeFrom: $friendSubTypeFrom
-      userSubTypeTo: $userSubTypeTo
-      friendSubTypeTo: $friendSubTypeTo
-    ) {
-      _id
-      _userId
-    }
-  }
-`;
+import { UPDATE_FRIEND_REQUEST } from './queries';
 
 const Container = styled.div`
   display: flex;

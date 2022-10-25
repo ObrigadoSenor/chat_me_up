@@ -73,5 +73,7 @@ export const useFriends = (_userId?: UserType['_id']) => {
     [filteredSubData, initData],
   );
 
-  return { friends, loading, error };
+  const { accepted = [], rejected = [], pending = [] } = friends || {};
+
+  return { friends, accepted, rejected, pending, loading, error };
 };

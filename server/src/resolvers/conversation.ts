@@ -24,7 +24,7 @@ import { Members } from "../models/member";
 import { Messages } from "../models/message";
 import { User, UserModelType } from "../models/user";
 
-type nameType = ConversationType["name"];
+type nameType = string;
 type idType = ConversationType["_id"];
 type userIdType = UserType["_id"];
 type memberUserIdType = MemberType["_userId"];
@@ -74,14 +74,13 @@ export class ConversationResolver {
   async addConversation(
     @PubSub("OnNewConversation")
     publish: Publisher<ConversationReturnType>,
-    @Arg("name") name: nameType,
     @Arg("membersIds", () => [String]) membersIds: memberUserIdType[],
     @Arg("_userId") _userId: userIdType
   ): Promise<ConversationType | Error> {
     const conversationData = (await new Conversations({
-      name,
       _messagesId: "placeholder",
       _membersId: "placeholder",
+      _adminsId: [],
     }).save()) as ConversationModelType;
     const _conversationId = conversationData?._id;
     const { _id: _messagesId } = await new Messages({
@@ -114,7 +113,9 @@ export class ConversationResolver {
 
     const conversation = (await Conversations.findOneAndUpdate(
       { _id: _conversationId },
-      { $set: { _messagesId, _membersId } },
+      {
+        $set: { _messagesId, _membersId, _adminsIds: [{ _adminId: _userId }] },
+      },
       { returnDocument: "after" }
     )) as ConversationType;
 
@@ -159,6 +160,26 @@ export class ConversationResolver {
     return conversation;
   }
 
+  @Mutation(() => ConversationType)
+  async updateNameOfConversation(
+    @PubSub("OnUpdateNameOfConversation")
+    publish: Publisher<ConversationType>,
+    @Arg("_conversationId") _conversationId: idType,
+    @Arg("name") name: nameType
+  ): Promise<ConversationType | Error> {
+    const conversation = await Conversations.findOneAndUpdate<ConversationType>(
+      { _id: _conversationId },
+      { $set: { name } },
+      { returnDocument: "after" }
+    );
+    if (!conversation) {
+      return { code: 500, message: `No conversation was updated` };
+    }
+
+    await publish(conversation);
+    return conversation;
+  }
+
   @Subscription(() => ConversationReturnType, {
     topics: "OnNewConversation",
   })
@@ -175,6 +196,15 @@ export class ConversationResolver {
   conversationDeleted(
     @Root() props: HydratedDocument<ConversationReturnType>
   ): ConversationReturnType {
+    return props;
+  }
+
+  @Subscription(() => ConversationType, {
+    topics: "OnUpdateNameOfConversation",
+  })
+  conversationNameChange(
+    @Root() props: HydratedDocument<ConversationType>
+  ): ConversationType {
     return props;
   }
 }

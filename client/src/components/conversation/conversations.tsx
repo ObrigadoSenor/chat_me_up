@@ -1,60 +1,17 @@
-import { gql, useMutation, useQuery } from '@apollo/client';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { compose, filter, includes, not, propEq } from 'ramda';
+import { useQuery } from '@apollo/client';
+import { compose, filter, includes, map, not, propEq } from 'ramda';
 import { useEffect, useMemo } from 'react';
 import styled from 'styled-components';
 import { ConversationType } from '../../../__generated_types__/types';
-import { setConversationId } from '../../store/slices/conversation';
-import { useAppDispatch, useAppSelector } from '../../store/store';
-import ConversationsItem from './conversationsItem';
-
-const GET_CONVERSATIONS = gql`
-  query getConversations($_userId: String!) {
-    getConversations(_userId: $_userId) {
-      _id
-      name
-      _membersId
-      _messagesId
-    }
-  }
-`;
-
-const DELETE_CONVERSATION = gql`
-  mutation deleteConversation($_conversationId: String!) {
-    deleteConversation(_conversationId: $_conversationId) {
-      _id
-      name
-    }
-  }
-`;
-
-const CONVERSATIONS_SUBSCRIPTION = gql`
-  subscription OnNewConversation {
-    conversationAdded {
-      data {
-        _id
-        name
-        _membersId
-        _messagesId
-      }
-      membersIds
-    }
-  }
-`;
-
-const CONVERSATIONS_DELETE_SUBSCRIPTION = gql`
-  subscription OnDeleteConversation {
-    conversationDeleted {
-      data {
-        _id
-        name
-        _membersId
-        _messagesId
-      }
-      membersIds
-    }
-  }
-`;
+import { useAppSelector } from '../../store/store';
+import { MEMBER_REMOVE_SUBSCRIPTION } from '../member/queries';
+import ConversationsItem from './item/item';
+import {
+  CONVERSATIONS_ADD_SUBSCRIPTION,
+  CONVERSATIONS_DELETE_SUBSCRIPTION,
+  CONVERSATIONS_NAME_CHANGE_SUBSCRIPTION,
+  GET_CONVERSATIONS,
+} from './queries';
 
 const ConversationsContainer = styled.ul`
   display: flex;
@@ -67,37 +24,25 @@ const ConversationsContainer = styled.ul`
 `;
 
 const Conversations = () => {
-  const disaptch = useAppDispatch();
   const { details } = useAppSelector(({ auth }) => auth);
 
   const { loading, error, data, subscribeToMore } = useQuery(GET_CONVERSATIONS, {
     variables: { _userId: details?._id },
   });
 
-  const [deleteConversation] = useMutation(DELETE_CONVERSATION);
-
-  const handleDelete = async (_conversationId: ConversationType['_id']) => {
-    await deleteConversation({ variables: { _conversationId } })
-      .then(() => {})
-      .catch((err) => console.log('err', err));
-  };
-
   useEffect(() => {
     const unsubFromAdd = subscribeToMore({
-      document: CONVERSATIONS_SUBSCRIPTION,
+      document: CONVERSATIONS_ADD_SUBSCRIPTION,
       updateQuery: (prev, { subscriptionData }) => {
         const { data } = subscriptionData || {};
         if (!data) return prev;
 
         const { conversationAdded } = data;
 
-        if (includes(details?._id, conversationAdded.membersIds)) {
-          return {
-            getConversations: [...prev.getConversations, conversationAdded.data],
-          };
-        }
         return {
-          getConversations: prev.getConversations,
+          getConversations: includes(details?._id, conversationAdded.membersIds)
+            ? [...prev.getConversations, conversationAdded.data]
+            : prev.getConversations,
         };
       },
     });
@@ -112,27 +57,60 @@ const Conversations = () => {
           compose(not, propEq('_id', conversationDeleted.data?._id)),
           prev.getConversations || [],
         );
-
-        if (includes(details?._id, conversationDeleted.membersIds)) {
-          disaptch(setConversationId(null));
-
-          return {
-            getConversations: keppedConversations,
-          };
-        }
         return {
-          getConversations: prev.getConversations,
+          getConversations: includes(details?._id, conversationDeleted.membersIds)
+            ? keppedConversations
+            : prev.getConversations,
         };
       },
     });
+    const unsubFromLeave = subscribeToMore({
+      document: MEMBER_REMOVE_SUBSCRIPTION,
+      updateQuery: (prev, { subscriptionData }) => {
+        const { data } = subscriptionData || {};
+
+        if (!data) return prev;
+        const { memberRemoved } = data;
+
+        const keepedMembers = filter(
+          (conv: ConversationType) => conv._id !== memberRemoved._conversationId,
+          prev.getConversations || [],
+        );
+
+        return {
+          getConversations: details?._id === memberRemoved._userId ? keepedMembers : prev.getConversations,
+        };
+      },
+    });
+    const unsubFromNameChange = subscribeToMore({
+      document: CONVERSATIONS_NAME_CHANGE_SUBSCRIPTION,
+      updateQuery: (prev, { subscriptionData }) => {
+        const { data } = subscriptionData || {};
+
+        if (!data) return prev;
+        const { conversationNameChange } = data;
+
+        const updatedConversation = map((conv: ConversationType) => {
+          if (conv._id !== conversationNameChange._id) {
+            conv.name = conversationNameChange.name;
+          }
+          return conv;
+        }, prev.getConversations || []);
+
+        return {
+          getConversations: updatedConversation,
+        };
+      },
+    });
+
     return () => {
       unsubFromAdd();
       unsubFromDelete();
+      unsubFromLeave();
+      unsubFromNameChange();
     };
   }, []);
-
   const { getConversations = [] } = data || {};
-
   const memoConversations = useMemo(
     () => getConversations.map((props: ConversationType) => <ConversationsItem key={props._id} {...props} />),
     [getConversations],
@@ -141,12 +119,7 @@ const Conversations = () => {
   if (loading) return <p>"Loading...";</p>;
   if (error) return <p>`Error! ${error.message}`</p>;
 
-  return (
-    <>
-      <h1>CONVERSATIONS</h1>
-      <ConversationsContainer>{memoConversations}</ConversationsContainer>
-    </>
-  );
+  return <ConversationsContainer>{memoConversations}</ConversationsContainer>;
 };
 
 export default Conversations;

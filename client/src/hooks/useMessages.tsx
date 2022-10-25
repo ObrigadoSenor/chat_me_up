@@ -8,6 +8,10 @@ const GET_MESSAGES = gql`
       _id
       _conversationId
       messages {
+        _id
+        _userId
+        createdAt
+        updatedAt
         message
       }
     }

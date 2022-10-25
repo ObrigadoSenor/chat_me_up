@@ -1,6 +1,13 @@
 import { Document, model, Schema } from "mongoose";
 import { ConversationType } from "../entities/conversation";
 
+export const ConversationAdminSchema = new Schema({
+  _adminId: {
+    type: String,
+    required: true,
+  },
+});
+
 export const ConversationUserSchema = new Schema({
   _conversationId: {
     type: String,
@@ -11,7 +18,7 @@ export const ConversationUserSchema = new Schema({
 const ConversationSchema = new Schema({
   name: {
     type: String,
-    required: true,
+    required: false,
   },
   _membersId: {
     type: String,
@@ -21,6 +28,7 @@ const ConversationSchema = new Schema({
     type: String,
     required: true,
   },
+  _adminsIds: [ConversationAdminSchema],
 });
 
 export type ConversationModelType = ConversationType | Document;

@@ -40,7 +40,7 @@ const Time = styled.span`
 export const Message = ({ _userId, message, createdAt, self, showTime }: MessageProps) => {
   const { name } = useUser(_userId);
 
-  const time = dayjs(createdAt).format('H:mm');
+  const time = createdAt ? dayjs(createdAt).format('H:mm') : null;
   return (
     <MessageLi self={self}>
       {!self && <Self>{name}</Self>}
