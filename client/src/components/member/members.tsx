@@ -1,124 +1,80 @@
-import { gql, useMutation, useQuery } from '@apollo/client';
-import { compose, filter, not, propEq } from 'ramda';
-import { useEffect, useMemo } from 'react';
-import { MemberType, UserType } from '../../../__generated_types__/types';
-import { useAppSelector } from '../../store/store';
+import { useSubscription } from '@apollo/client';
+import { isEmpty } from 'ramda';
+import { useMemo } from 'react';
+import styled from 'styled-components';
+import { MemberType, MessagesType, Subscription } from '../../../__generated_types__/types';
+import { useMembers } from '../../hooks/useMembers';
+import { AddMembers } from './addMembers';
 import { Member } from './member';
+import { MEMBER_ADD_SUBSCRIPTION, MEMBER_REMOVE_SUBSCRIPTION } from './queries';
 
-const GET_MEMBERS = gql`
-  query getMembers($_conversationId: String!) {
-    getMembers(_conversationId: $_conversationId) {
-      _id
-      _userId
-    }
-  }
+const MembersContainer = styled.div`
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  flex-direction: column;
+  padding: 0.5rem 0;
+  width: 100%;
 `;
 
-const ADD_MEMBER = gql`
-  mutation addMember($_conversationId: String!, $_userId: String!) {
-    addMember(_conversationId: $_conversationId, _userId: $_userId) {
-      _id
-      _userId
-    }
-  }
+const MembersAmount = styled.span`
+  font-size: 0.75rem;
+  padding-left: 0.25rem;
 `;
 
-const REMOVE_MEMBER = gql`
-  mutation removeMember($_conversationId: String!, $_userId: String!) {
-    removeMember(_conversationId: $_conversationId, _userId: $_userId) {
-      _id
-      _userId
-    }
-  }
+const MemberList = styled.ul`
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-direction: column;
+  list-style-type: none;
+  width: 100%;
+  padding: 0;
+  margin: 0.25rem 0;
+  border-radius: 0.5rem;
+  background-color: rgba(240, 240, 240, 0.3);
+  overflow: hidden;
 `;
 
-const MEMBER_ADD_SUBSCRIPTION = gql`
-  subscription OnNewMember {
-    memberAdded {
-      _id
-      _userId
+export const Members = ({ _conversationId }: Pick<MessagesType, '_conversationId'>) => {
+  let { members, loading, error } = useMembers(_conversationId);
+
+  const { data: friendAddData } = useSubscription<{ memberAdded: Subscription['memberAdded'] }>(
+    MEMBER_ADD_SUBSCRIPTION,
+  );
+
+  const { memberAdded = {} as MemberType } = friendAddData || {};
+
+  const { data: friendRemoveData } = useSubscription<{ memberRemoved: Subscription['memberRemoved'] }>(
+    MEMBER_REMOVE_SUBSCRIPTION,
+  );
+
+  const { memberRemoved } = friendRemoveData || {};
+
+  const filteredMembers = useMemo(() => {
+    if (memberRemoved !== undefined) {
+      members = members.filter(({ _userId }) => _userId !== memberRemoved?._userId);
+    } else if (!isEmpty(memberAdded)) {
+      members = [...members, memberAdded];
     }
-  }
-`;
-
-const MEMBER_REMOVE_SUBSCRIPTION = gql`
-  subscription OnRemoveMember {
-    memberRemoved {
-      _id
-      _userId
-    }
-  }
-`;
-
-export const Members = () => {
-  const { enteredConversationId: _conversationId } = useAppSelector(({ conversation }) => conversation);
-  const { loading, error, data, subscribeToMore } = useQuery(GET_MEMBERS, { variables: { _conversationId } });
-
-  const [addMember] = useMutation(ADD_MEMBER);
-  const [removeMember] = useMutation(REMOVE_MEMBER);
-
-  useEffect(() => {
-    const unsubFromAdd = subscribeToMore({
-      document: MEMBER_ADD_SUBSCRIPTION,
-      updateQuery: (prev, { subscriptionData = {} }) => {
-        const { data } = subscriptionData;
-        if (!data) return prev;
-        const { memberAdded } = data || {};
-        const { getMembers = [] } = prev || {};
-        return {
-          getMembers: [...getMembers, memberAdded],
-        };
-      },
-    });
-    const unsubFromDelete = subscribeToMore({
-      document: MEMBER_REMOVE_SUBSCRIPTION,
-      updateQuery: (prev, { subscriptionData }) => {
-        const { data } = subscriptionData || {};
-
-        if (!data) return prev;
-
-        const { memberRemoved } = data;
-        const { getMembers = [] } = prev || {};
-
-        const keppedMembers = filter(compose(not, propEq('_id', memberRemoved?._id)), getMembers);
-        const removed = keppedMembers.length !== getMembers.length;
-        return {
-          getMembers: removed ? keppedMembers : getMembers,
-        };
-      },
-    });
-    return () => {
-      unsubFromAdd();
-      unsubFromDelete();
-    };
-  }, []);
-
-  const handleAdd = async (_userId: UserType['_id']) => {
-    return await addMember({ variables: { _conversationId, _userId } })
-      .then(() => {})
-      .catch((err) => console.log('err', err));
-  };
-
-  const handleRemove = async (_userId: UserType['_id']) => {
-    return await removeMember({ variables: { _conversationId, _userId } })
-      .then(() => {})
-      .catch((err) => console.log('err', err));
-  };
-
-  const { getMembers = [] } = data || {};
+    return members;
+  }, [members, memberAdded, memberRemoved]);
 
   const memoMembers = useMemo(
-    () => getMembers.map((props: MemberType) => <Member key={props._id} {...props} />),
-    [getMembers],
+    () => filteredMembers.map((props: MemberType) => <Member key={props._id} icon="image" {...props} />),
+    [filteredMembers],
   );
 
   if (loading) return <p>"Loading...";</p>;
   if (error) return <p>`Error! ${error.message}`</p>;
 
   return (
-    <>
-      <h1>MEMBERS</h1>
-      {memoMembers}
-    </>
+    <MembersContainer>
+      <MembersAmount>{members.length} members</MembersAmount>
+      <MemberList>
+        <AddMembers _conversationId={_conversationId} members={members} />
+        {memoMembers}
+      </MemberList>
+    </MembersContainer>
   );
 };

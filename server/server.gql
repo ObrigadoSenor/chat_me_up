@@ -3,16 +3,27 @@
 # !!!   DO NOT MODIFY THIS FILE BY YOURSELF   !!!
 # -----------------------------------------------
 
+type ConversationAdminType {
+  _adminId: String!
+  _id: String!
+}
+
 type ConversationBasicType {
   _conversationId: String!
   _id: String!
 }
 
+type ConversationReturnType {
+  data: ConversationType!
+  membersIds: [String!]!
+}
+
 type ConversationType {
+  _adminsIds: [ConversationAdminType!]!
   _id: String!
   _membersId: String!
   _messagesId: String!
-  name: String!
+  name: String
 }
 
 type FriendType {
@@ -30,7 +41,13 @@ type FriendsType {
   _userId: String!
   accepted: [FriendType!]!
   pending: [FriendType!]!
+  rejected: [FriendType!]!
   requests: [FriendType!]!
+}
+
+type MemberLeaveType {
+  _conversationId: String!
+  _userId: String!
 }
 
 type MemberType {
@@ -41,7 +58,9 @@ type MemberType {
 type MessageType {
   _id: String!
   _userId: String!
+  createdAt: Float!
   message: String!
+  updatedAt: Float!
 }
 
 type MessagesType {
@@ -51,16 +70,17 @@ type MessagesType {
 }
 
 type Mutation {
-  addConversation(_userId: String!, membersIds: [String!]!, name: String!): ConversationType!
+  addConversation(_userId: String!, membersIds: [String!]!): ConversationType!
   addMember(_conversationId: String!, _userId: String!): MemberType!
   addUser(confirmPassword: String!, email: String!, name: String!, password: String!): UserType!
   deleteConversation(_conversationId: String!): ConversationType!
   deleteUser(_id: String!): UserType!
   loginUser(email: String!, password: String!): UserType!
-  removeMember(_conversationId: String!, _userId: String!): MemberType!
+  removeMember(_conversationId: String!, _userId: String!): MemberLeaveType!
   sendFriendRequest(_friendId: String!, _userId: String!, friendSubType: String, userSubType: String): FriendType!
   sendMessage(_conversationId: String!, _userId: String!, message: String!): MessageType!
   updateFriendRequest(_friendId: String!, _userId: String!, friendSubTypeFrom: String, friendSubTypeTo: String, userSubTypeFrom: String, userSubTypeTo: String): FriendType!
+  updateNameOfConversation(_conversationId: String!, name: String!): ConversationType!
 }
 
 type Query {
@@ -68,7 +88,8 @@ type Query {
   getFriends(_userId: String!, type: String): [FriendType!]!
   getFriendsNode(_userId: String!): FriendsType!
   getMembers(_conversationId: String!): [MemberType!]!
-  getMessages(_conversationId: String!): MessagesType!
+  getMessage(_conversationId: String!): [MessageType!]!
+  getMessages(_messagesId: String!): MessagesType!
   getUser(_id: String!): UserType!
   getUserByToken(token: String!): UserType!
   getUsers: [UserType!]!
@@ -77,12 +98,13 @@ type Query {
 }
 
 type Subscription {
-  conversationAdded: ConversationType!
-  conversationDeleted: ConversationType!
+  conversationAdded: ConversationReturnType!
+  conversationDeleted: ConversationReturnType!
+  conversationNameChange: ConversationType!
   friendRequestSent: [FriendsType!]!
   memberAdded: MemberType!
-  memberRemoved: MemberType!
-  messageSent: MessageType!
+  memberRemoved: MemberLeaveType!
+  messageSent: MessagesType!
   userAdded: UserBasicType!
   userDeleted: UserType!
 }

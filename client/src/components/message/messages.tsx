@@ -1,67 +1,55 @@
-import { gql, useQuery } from '@apollo/client';
-import { useEffect, useMemo } from 'react';
-import { MessageType } from '../../../__generated_types__/types';
+import dayjs from 'dayjs';
+import { Fragment, useMemo } from 'react';
+import styled from 'styled-components';
+import { MessagesType } from '../../../__generated_types__/types';
 import { useAppSelector } from '../../store/store';
 import { Message } from './message';
 
-const GET_MESSAGES = gql`
-  query getMessages($_conversationId: String!) {
-    getMessages(_conversationId: $_conversationId) {
-      _id
-      _conversationId
-      messages {
-        _id
-        _userId
-        message
-      }
-    }
-  }
+const MessagesUl = styled.ul`
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-direction: column-reverse;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  list-style-type: none;
 `;
 
-const MESSAGES_SUBSCRIPTION = gql`
-  subscription OnNewMessage {
-    messageSent {
-      _id
-      _userId
-      message
-    }
-  }
+const MessagesDay = styled.span`
+  font-size: 0.65rem;
+  margin-top: 0.5rem;
 `;
 
-export const Messages = () => {
-  const { enteredConversationId: _conversationId } = useAppSelector(({ conversation }) => conversation);
-  const { loading, error, data, subscribeToMore } = useQuery(GET_MESSAGES, { variables: { _conversationId } });
+export const Messages = ({ messages }: Pick<MessagesType, 'messages'>) => {
+  const { details } = useAppSelector(({ auth }) => auth);
 
-  useEffect(() => {
-    const unsub = subscribeToMore({
-      document: MESSAGES_SUBSCRIPTION,
-      updateQuery: (prev, { subscriptionData = {} }) => {
-        const { data } = subscriptionData;
+  let messageShowTimeIndex = 0;
 
-        if (!data) return prev;
-        const { messageSent } = data || {};
-        const { messages = [] } = prev?.getMessages || {};
-        return {
-          getMessages: [...messages, messageSent],
-        };
-      },
-    });
-    return () => unsub();
-  }, []);
-
-  const { messages = [] } = data?.getMessages || {};
   const memoMessages = useMemo(
-    () => messages.map((props: MessageType) => <Message key={props._id} {...props} />),
+    () =>
+      messages.map((props, index) => {
+        const { createdAt } = props || {};
+        const { createdAt: lastCreatedAt } = messages[messageShowTimeIndex] || {};
+
+        let showDate;
+
+        if (lastCreatedAt) {
+          showDate = dayjs(createdAt).isBefore(dayjs(lastCreatedAt), 'day');
+          dayjs(createdAt).isBefore(dayjs(lastCreatedAt), 'minute') ? (messageShowTimeIndex = index) : null;
+        }
+
+        const day = dayjs(lastCreatedAt).isSame(dayjs(), 'day') ? 'Today' : dayjs(lastCreatedAt).format('ddd, D MMM');
+
+        return (
+          <Fragment key={props._id}>
+            {showDate && <MessagesDay key={props.createdAt}>{day}</MessagesDay>}
+            <Message self={props._userId === details?._id} showTime={index === messageShowTimeIndex} {...props} />
+          </Fragment>
+        );
+      }),
     [messages],
   );
 
-  if (loading) return <p>"Loading...";</p>;
-  if (error) return <p>`Error! ${error.message}`</p>;
-
-  return (
-    <>
-      <h1>MESSAGES</h1>
-      {memoMessages}
-    </>
-  );
+  return <MessagesUl>{memoMessages}</MessagesUl>;
 };

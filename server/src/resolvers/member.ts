@@ -11,7 +11,7 @@ import {
   Subscription,
 } from "type-graphql";
 
-import { MembersType, MemberType } from "./../entities/member";
+import { MemberLeaveType, MembersType, MemberType } from "./../entities/member";
 
 import { Error } from "../entities/error";
 
@@ -19,6 +19,7 @@ import { ConversationType } from "../entities/conversation";
 import { UserType } from "../entities/user";
 
 import { MemberModelType, Members } from "./../models/member";
+import { User } from "../models/user";
 
 type conversationIdType = ConversationType["_id"];
 type userIdType = UserType["_id"];
@@ -66,28 +67,41 @@ export class MemberResolver {
     return newlyAddedMember;
   }
 
-  @Mutation(() => MemberType)
+  @Mutation(() => MemberLeaveType)
   async removeMember(
-    @PubSub("OnRemoveMember") publish: Publisher<MemberType>,
+    @PubSub("OnRemoveMember") publish: Publisher<MemberLeaveType>,
     @Arg("_conversationId") _conversationId: conversationIdType,
     @Arg("_userId") _userId: userIdType
-  ): Promise<MemberType | Error> {
+  ): Promise<MemberLeaveType | Error> {
+    const user = await User.findOneAndUpdate<UserType>(
+      { _id: _userId },
+      { $pull: { conversations: { _conversationId } } }
+    );
+
+    if (!user) {
+      return { code: 500, message: `No user was deleted` };
+    }
+
     const members = await Members.findOneAndUpdate<MembersType>(
       { _conversationId },
       { $pull: { members: { _userId } } },
-      { returnOriginal: true }
+      { returnDocument: "after" }
     );
 
     if (!members) {
       return { code: 500, message: `No member was deleted` };
     }
+
     const newlyRemovedMember = last(members.members);
     if (newlyRemovedMember === undefined) {
       return { code: 500, message: `Could'nt get the last removed member` };
     }
-
-    await publish(newlyRemovedMember);
-    return newlyRemovedMember;
+    const data: MemberLeaveType = {
+      _userId: _userId,
+      _conversationId: _conversationId,
+    };
+    await publish(data);
+    return data;
   }
 
   @Subscription({
@@ -100,7 +114,9 @@ export class MemberResolver {
   @Subscription({
     topics: "OnRemoveMember",
   })
-  memberRemoved(@Root() props: HydratedDocument<MemberType>): MemberType {
+  memberRemoved(
+    @Root() props: HydratedDocument<MemberLeaveType>
+  ): MemberLeaveType {
     return props;
   }
 }

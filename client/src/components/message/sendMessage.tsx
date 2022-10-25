@@ -1,25 +1,34 @@
-import { gql, useMutation } from '@apollo/client';
+import { useMutation } from '@apollo/client';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useState } from 'react';
+import styled from 'styled-components';
+import { MessagesType } from '../../../__generated_types__/types';
 import { useAppSelector } from '../../store/store';
+import { Input } from '../atoms/input';
+import { SEND_MESSAGE } from './queries';
 
-const SEND_MESSAGE = gql`
-  mutation sendMessage($_userId: String!, $message: String!, $_conversationId: String!) {
-    sendMessage(_userId: $_userId, message: $message, _conversationId: $_conversationId) {
-      _id
-      _userId
-      message
-    }
-  }
+const SendMessagesContainer = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-direction: row;
+  padding: 1rem 2rem;
+  width: 100%;
+  box-sizing: border-box;
+  background-color: rgba(30, 30, 30, 0.75);
+  border-bottom-right-radius: 0.5rem;
+  border-bottom-left-radius: 0.5rem;
+  color: white;
 `;
 
-export const SendMessage = () => {
-  const { enteredConversationId: _conversationId } = useAppSelector(({ conversation }) => conversation);
+const SendMessage = ({ _conversationId }: Pick<MessagesType, '_conversationId'>) => {
   const { details } = useAppSelector(({ auth }) => auth);
 
   const [message, setMessage] = useState<string>('');
   const [sendMessage] = useMutation(SEND_MESSAGE);
 
-  const handleSend = () => {
+  const handleSend = (message?: string) => {
+    if (!message) return null;
     sendMessage({ variables: { _userId: details?._id, message, _conversationId } })
       .then(() => {
         setMessage('');
@@ -28,9 +37,13 @@ export const SendMessage = () => {
   };
 
   return (
-    <div>
-      <input type="text" value={message} onChange={(e) => setMessage(e.target.value)}></input>
-      <button onClick={handleSend}>Create message</button>
-    </div>
+    <SendMessagesContainer>
+      <Input
+        placeholder="New message"
+        icons={{ end: { icon: 'paper-plane', onClick: (value) => handleSend(value) } }}
+      />
+    </SendMessagesContainer>
   );
 };
+
+export default SendMessage;
