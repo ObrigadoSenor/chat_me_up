@@ -1,11 +1,7 @@
-import { useSubscription } from '@apollo/client';
-import { reverse } from 'ramda';
-import { useMemo } from 'react';
 import styled from 'styled-components';
-import { ConversationType, Subscription } from '../../../../__generated_types__/types';
+import { ConversationType } from '../../../../__generated_types__/types';
 import { useMessages } from '../../../hooks/useMessages';
 import { Messages } from '../../message/messages';
-import { MESSAGES_SUBSCRIPTION } from '../queries';
 
 const ContentContainer = styled.div`
   display: flex;
@@ -20,20 +16,11 @@ const ContentContainer = styled.div`
 `;
 
 const Conversation = ({ _messagesId }: ConversationType) => {
-  const { messages = [] } = useMessages(_messagesId) || {};
-  const { data: subData } = useSubscription<{ messageSent: Subscription['messageSent'] }>(MESSAGES_SUBSCRIPTION);
-  const { messageSent } = subData || {};
-
-  const allMessages = useMemo(
-    () => (messageSent === undefined || messageSent._id !== _messagesId ? messages : messageSent.messages),
-    [messageSent, messages],
-  );
-
-  const revMessage = reverse(allMessages);
+  const { messages = [], loading, error } = useMessages(_messagesId) || {};
 
   return (
     <ContentContainer>
-      <Messages messages={revMessage} />
+      <Messages messages={messages} />
     </ContentContainer>
   );
 };

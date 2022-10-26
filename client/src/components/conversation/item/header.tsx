@@ -1,12 +1,10 @@
-import { useSubscription } from '@apollo/client';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { last, map } from 'ramda';
+import { head, map } from 'ramda';
 import { useMemo } from 'react';
 import styled from 'styled-components';
-import { ConversationType, Subscription } from '../../../../__generated_types__/types';
+import { ConversationType } from '../../../../__generated_types__/types';
 import { useMembers } from '../../../hooks/useMembers';
 import { useMessages } from '../../../hooks/useMessages';
-import { MESSAGES_SUBSCRIPTION } from '../queries';
 import { Title } from './title';
 
 const Container = styled.div<{ open: boolean }>`
@@ -79,19 +77,9 @@ interface HeaderProps extends ConversationType {
 }
 
 export const Header = ({ _id, name, _messagesId, setOpenMenu, setOpenMessages, open }: HeaderProps) => {
-  const { messages = [] } = useMessages(_messagesId) || {};
+  const { messages } = useMessages(_messagesId) || {};
   const { members } = useMembers(_id) || {};
-  const { data: subData } = useSubscription<{ messageSent: Subscription['messageSent'] }>(MESSAGES_SUBSCRIPTION);
-  const { messageSent } = subData || {};
-
-  const { message } =
-    useMemo(() => {
-      if (messageSent && messageSent._id === _messagesId) {
-        return last(messageSent.messages);
-      }
-
-      return last(messages);
-    }, [messages, messageSent]) || {};
+  const latestMessage = head(messages);
 
   const title = useMemo(() => map(({ _userId, _id }) => <Title key={_id} _userId={_userId} />, members), [members]);
 
@@ -101,7 +89,7 @@ export const Header = ({ _id, name, _messagesId, setOpenMenu, setOpenMessages, o
         <FontAwesomeIcon icon="message" />
         <Text>
           {name ? <TitleText>{name}</TitleText> : <TitleList>{title}</TitleList>}
-          {message && <LatestMessage>{message}</LatestMessage>}
+          {latestMessage && <LatestMessage>{latestMessage.message}</LatestMessage>}
         </Text>
         <Btn onClick={() => setOpenMessages()} />
       </HeaderText>

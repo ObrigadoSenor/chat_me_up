@@ -1,7 +1,9 @@
-import { gql, useQuery, useSubscription } from '@apollo/client';
+import { gql, useMutation, useQuery, useSubscription } from '@apollo/client';
 import { filter, isEmpty, mergeAll } from 'ramda';
 import { useMemo } from 'react';
-import { Query, Subscription, UserType } from '../../__generated_types__/types';
+import { FriendType, Query, Subscription, UserType } from '../../__generated_types__/types';
+import { FriendsKeyType } from '../components/friend/friends';
+import { SEND_FRIEND_REQUEST, UPDATE_FRIEND_REQUEST } from '../components/friend/queries';
 
 const GET_FRIENDS_NODE = gql`
   query getFriendsNode($_userId: String!) {
@@ -53,6 +55,16 @@ const FRIEND_REQUEST_SENT_SUBSCRIPTION = gql`
   }
 `;
 
+interface UpdateFriendProps extends FriendType {
+  type: FriendsKeyType;
+  _userId: UserType['_id'];
+  _friendId: UserType['_id'];
+  userSubTypeFrom?: FriendsKeyType;
+  friendSubTypeFrom?: FriendsKeyType;
+  userSubTypeTo?: FriendsKeyType;
+  friendSubTypeTo?: FriendsKeyType;
+}
+
 export const useFriends = (_userId?: UserType['_id']) => {
   const {
     loading,
@@ -73,7 +85,25 @@ export const useFriends = (_userId?: UserType['_id']) => {
     [filteredSubData, initData],
   );
 
-  const { accepted = [], rejected = [], pending = [] } = friends || {};
+  const [sendFriendRequestMutation] = useMutation(SEND_FRIEND_REQUEST);
 
-  return { friends, accepted, rejected, pending, loading, error };
+  const sendFriendRequest = async (_friendId: FriendType['_userId']) => {
+    return await sendFriendRequestMutation({ variables: { _friendId, _userId } })
+      .then(() => {})
+      .catch((err) => console.log('err', err));
+  };
+
+  const [updateFriendRequestMutation] = useMutation(UPDATE_FRIEND_REQUEST);
+
+  const updateFriendRequest = async (props: UpdateFriendProps) => {
+    return await updateFriendRequestMutation({
+      variables: { ...props },
+    })
+      .then(() => {})
+      .catch((err) => console.log('err', err));
+  };
+
+  const { accepted = [], rejected = [], pending = [], requests = [] } = friends || {};
+
+  return { friends, accepted, rejected, pending, requests, sendFriendRequest, updateFriendRequest, loading, error };
 };

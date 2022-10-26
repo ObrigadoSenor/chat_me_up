@@ -1,12 +1,9 @@
-import { useSubscription } from '@apollo/client';
-import { isEmpty } from 'ramda';
 import { useMemo } from 'react';
 import styled from 'styled-components';
-import { MemberType, MessagesType, Subscription } from '../../../__generated_types__/types';
+import { MemberType, MessagesType } from '../../../__generated_types__/types';
 import { useMembers } from '../../hooks/useMembers';
 import { AddMembers } from './addMembers';
 import { Member } from './member';
-import { MEMBER_ADD_SUBSCRIPTION, MEMBER_REMOVE_SUBSCRIPTION } from './queries';
 
 const MembersContainer = styled.div`
   display: flex;
@@ -37,32 +34,11 @@ const MemberList = styled.ul`
 `;
 
 export const Members = ({ _conversationId }: Pick<MessagesType, '_conversationId'>) => {
-  let { members, loading, error } = useMembers(_conversationId);
-
-  const { data: friendAddData } = useSubscription<{ memberAdded: Subscription['memberAdded'] }>(
-    MEMBER_ADD_SUBSCRIPTION,
-  );
-
-  const { memberAdded = {} as MemberType } = friendAddData || {};
-
-  const { data: friendRemoveData } = useSubscription<{ memberRemoved: Subscription['memberRemoved'] }>(
-    MEMBER_REMOVE_SUBSCRIPTION,
-  );
-
-  const { memberRemoved } = friendRemoveData || {};
-
-  const filteredMembers = useMemo(() => {
-    if (memberRemoved !== undefined) {
-      members = members.filter(({ _userId }) => _userId !== memberRemoved?._userId);
-    } else if (!isEmpty(memberAdded)) {
-      members = [...members, memberAdded];
-    }
-    return members;
-  }, [members, memberAdded, memberRemoved]);
+  const { members, loading, error } = useMembers(_conversationId);
 
   const memoMembers = useMemo(
-    () => filteredMembers.map((props: MemberType) => <Member key={props._id} icon="image" {...props} />),
-    [filteredMembers],
+    () => members.map((props: MemberType) => <Member key={props._id} icon="image" {...props} />),
+    [members],
   );
 
   if (loading) return <p>"Loading...";</p>;
