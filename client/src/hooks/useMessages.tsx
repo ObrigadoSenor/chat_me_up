@@ -1,6 +1,8 @@
-import { gql, useQuery } from '@apollo/client';
+import { gql, useQuery, useSubscription } from '@apollo/client';
+import { reverse } from 'ramda';
 import { useMemo } from 'react';
-import { MessagesType, Query } from '../../__generated_types__/types';
+import { MessagesType, Query, Subscription } from '../../__generated_types__/types';
+import { MESSAGES_SUBSCRIPTION } from '../components/conversation/queries';
 
 const GET_MESSAGES = gql`
   query getMessages($_messagesId: String!) {
@@ -22,8 +24,16 @@ export const useMessages = (_messagesId: MessagesType['_id']) => {
   const { loading, error, data } = useQuery<{ getMessages: Query['getMessages'] }>(GET_MESSAGES, {
     variables: { _messagesId },
   });
+  const messages = useMemo(() => data?.getMessages, [data]);
 
-  const getMessages = useMemo(() => data?.getMessages, [data]);
+  const { data: subData } = useSubscription<{ messageSent: Subscription['messageSent'] }>(MESSAGES_SUBSCRIPTION);
+  const { messageSent } = subData || {};
 
-  return getMessages;
+  const allMessages = useMemo(
+    () =>
+      messageSent === undefined || messageSent._id !== _messagesId ? messages?.messages || [] : messageSent.messages,
+    [messageSent, messages],
+  );
+
+  return { messages: reverse(allMessages), loading, error };
 };

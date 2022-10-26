@@ -1,4 +1,5 @@
 import { gql, useQuery } from '@apollo/client';
+import { reject } from 'ramda';
 import { useMemo } from 'react';
 import { UserBasicType, UserType } from '../../__generated_types__/types';
 
@@ -12,9 +13,11 @@ const GET_USERS = gql`
   }
 `;
 
-export const useUsers = () => {
-  const { loading, error, data } = useQuery<{ getUsers: UserBasicType[] }>(GET_USERS);
-  const getUsers = useMemo(() => data?.getUsers, [data]) || [];
+export const useUsers = (_id?: UserType['_id']) => {
+  const { data } = useQuery<{ getUsers: UserBasicType[] }>(GET_USERS);
+  const users = useMemo(() => data?.getUsers, [data]) || [];
 
-  return getUsers;
+  const userWithoutSelf = useMemo(() => reject((user: UserBasicType) => user._id === _id, users), [users]);
+
+  return { users, userWithoutSelf };
 };
