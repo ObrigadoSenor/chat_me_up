@@ -1,0 +1,10 @@
+overwrite: true
+generates:
+  ../shared/generated/serverTypes.ts:
+    schema: "./server.gql"
+    plugins:
+      - "typescript"
+      - "typescript-operations"
+      - "typescript-react-apollo"
+    config:
+      skipTypename: true
