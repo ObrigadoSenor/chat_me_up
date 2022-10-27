@@ -4,7 +4,7 @@ import { useState } from 'react';
 import styled from 'styled-components';
 import { MessagesType } from '../../../__generated_types__/types';
 import { useAppSelector } from '../../store/store';
-import { Input } from '../atoms/input1';
+import { Input } from '../atoms/input';
 import { SEND_MESSAGE } from './queries';
 
 const SendMessagesContainer = styled.div`

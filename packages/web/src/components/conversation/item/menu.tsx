@@ -5,7 +5,7 @@ import { useMemo } from 'react';
 import styled from 'styled-components';
 import { ConversationType } from '../../../../__generated_types__/types';
 import { useAppSelector } from '../../../store/store';
-import { Input } from '../../atoms/input1';
+import { Input } from '../../atoms/input';
 import { Members } from '../../member/members';
 import { REMOVE_MEMBER } from '../../member/queries';
 import { DELETE_CONVERSATION, UPDATE_NAME_OF_CONVERSATION } from '../queries';

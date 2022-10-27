@@ -3,8 +3,9 @@ import { containerStyle, inputContainerStyle, inputStyle, titleStyle } from '@ch
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 import { InputHTMLAttributes, useRef, useState } from 'react';
-import { TextInput, TouchableWithoutFeedback } from 'react-native';
-import styled from 'styled-components/native';
+import { TextInput } from 'react-native';
+import styled, { css } from 'styled-components/native';
+import { Icon, IconProps } from './icon';
 
 const Container = styled.View`
   ${containerStyle}
@@ -14,7 +15,7 @@ const InputContainer = styled.View`
   ${inputContainerStyle}
 `;
 
-const Inp = styled.TextInput`
+const Inp = styled.TextInput<{ icons: { start: boolean; end: boolean } }>`
   ${inputStyle}
 `;
 
@@ -22,9 +23,12 @@ const Title = styled.Text`
   ${titleStyle}
 `;
 
-type InputIconProps = {
-  name: React.ComponentProps<typeof MaterialIcons>['name'];
-  onClick: (value?: string) => void;
+const IconStyled = styled(Icon)`
+  margin: 0 10px;
+`;
+
+type InputIconProps = Omit<IconProps, 'onPress'> & {
+  onPress: (value?: string) => void;
 };
 
 type InputIconsProps = {
@@ -37,40 +41,37 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   clearOnClick?: boolean;
 }
 
-const Icon = ({ name, onClick, dir }: InputIconProps & { dir: keyof InputIconsProps }) => (
-  <TouchableWithoutFeedback onPress={() => onClick()}>
-    <MaterialIcons
-      name={name}
-      size={20}
-      style={{ marginLeft: dir === 'end' ? 20 : 0, marginRight: dir === 'start' ? 20 : 0 }}
-    />
-  </TouchableWithoutFeedback>
-);
-
-export const Input = ({ icons = {}, title, clearOnClick = true, ...props }: InputProps) => {
+export const Input = ({ icons = {}, title, clearOnClick = true, style, ...props }: InputProps) => {
   const [message, setMessage] = useState('');
   const inputRef = useRef<TextInput>(null);
 
   const { start, end } = icons || {};
 
-  const onHandleClick = (onClick: InputIconProps['onClick']) => {
-    onClick(message);
+  const onHandleClick = (onPress: InputIconProps['onPress']) => {
+    onPress(message);
     if (clearOnClick && message !== '') {
       setMessage('');
     }
   };
 
-  const startIcon = start ? <Icon {...start} onClick={() => onHandleClick(start.onClick)} dir="start" /> : null;
-  const endIcon = end ? <Icon {...end} onClick={() => onHandleClick(end.onClick)} dir="end" /> : null;
+  const startIcon = start ? <IconStyled {...start} onPress={() => onHandleClick(start.onPress)} /> : null;
+  const endIcon = end ? <IconStyled {...end} onPress={() => onHandleClick(end.onPress)} /> : null;
 
   return (
-    <Container>
-      {startIcon}
+    <Container style={style}>
       <InputContainer>
+        {startIcon}
+
         {title ? <Title>{title}</Title> : null}
-        <Inp value={message} {...props} ref={inputRef} onChangeText={(value: string) => setMessage(value)} />
+        <Inp
+          icons={{ start: startIcon !== null, end: endIcon !== null }}
+          value={message}
+          {...props}
+          ref={inputRef}
+          onChangeText={(value: string) => setMessage(value)}
+        />
+        {endIcon}
       </InputContainer>
-      {endIcon}
     </Container>
   );
 };

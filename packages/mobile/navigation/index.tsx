@@ -6,20 +6,22 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
+import { DarkTheme, DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import * as React from 'react';
-import { ColorSchemeName, Pressable, Text, TouchableWithoutFeedback, View } from 'react-native';
+import { ColorSchemeName } from 'react-native';
 import styled from 'styled-components/native';
 
+import { map } from 'ramda';
+import { Icon } from '../components/atoms/icon';
 import Colors from '../constants/Colors';
 import useColorScheme from '../hooks/useColorScheme';
+import Conversations from '../screens/Conversations';
 import ConversationScreen from '../screens/ConversationScreen';
 import ModalScreen from '../screens/ModalScreen';
 import NotFoundScreen from '../screens/NotFoundScreen';
-import Conversations from '../screens/Conversations';
 import TabTwoScreen from '../screens/TabTwoScreen';
-import { RootStackParamList, RootTabParamList, RootTabScreenProps, StackConversationScreenType } from '../types';
+import { RootStackParamList, RootTabParamList, RootTabScreenProps } from '../types';
 import LinkingConfiguration from './LinkingConfiguration';
 
 export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeName }) {
@@ -30,32 +32,13 @@ export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeNa
   );
 }
 
-const HeaderContainer = styled.View`
-  height: 100;
-  padding: 40px 20px 0px 20px;
-  width: 100%;
-  background-color: rgba(240, 240, 240, 1);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-direction: row;
-`;
-
-const HeaderCenter = styled.View`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`;
-
-const HeaderLeft = styled(HeaderCenter)`
-  padding: 10px;
-`;
-
-const HeaderRight = styled(HeaderLeft)``;
+const TitleContainer = styled.View``;
+const Title = styled.Text``;
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 function RootNavigator() {
+  const colorScheme = useColorScheme();
   return (
     <Stack.Navigator>
       <Stack.Screen name="Root" component={BottomTabNavigator} options={{ headerShown: false }} />
@@ -63,28 +46,25 @@ function RootNavigator() {
       <Stack.Screen
         name="Conversation"
         component={ConversationScreen}
-        options={{
-          headerBackVisible: true,
+        options={({ navigation, route }) => ({
+          headerBackVisible: false,
           headerBackTitleVisible: false,
-          header: ({ route, navigation }) => {
-            const { title } = (route?.params || {}) as StackConversationScreenType;
-
-            return (
-              <HeaderContainer>
-                <TouchableWithoutFeedback onPress={() => navigation.goBack()}>
-                  <HeaderLeft>
-                    <MaterialIcons name="chevron-left" size={20} />
-                  </HeaderLeft>
-                </TouchableWithoutFeedback>
-
-                {title ? <HeaderCenter>{[...title]}</HeaderCenter> : null}
-                <HeaderRight>
-                  <MaterialIcons name="menu" size={20} />
-                </HeaderRight>
-              </HeaderContainer>
-            );
+          headerLeft: () => (
+            <Icon name="chevron-left" color={Colors[colorScheme].text} onPress={() => navigation.goBack()} />
+          ),
+          headerTitle: () => {
+            const { title = [] } = route?.params || {};
+            const text = map((t) => <Title>{t}</Title>, title);
+            return <TitleContainer>{text}</TitleContainer>;
           },
-        }}
+          headerRight: () => (
+            <Icon
+              name="settings"
+              color={Colors[colorScheme].text}
+              onPress={() => navigation.navigate('Modal', { variant: 'conversation', ...route?.params })}
+            />
+          ),
+        })}
       />
 
       <Stack.Group screenOptions={{ presentation: 'modal' }}>
@@ -117,14 +97,7 @@ function BottomTabNavigator() {
           title: 'Conversations',
           tabBarIcon: ({ color }) => <TabBarIcon name="message" color={color} />,
           headerRight: () => (
-            <Pressable
-              onPress={() => navigation.navigate('Modal')}
-              style={({ pressed }) => ({
-                opacity: pressed ? 0.5 : 1,
-              })}
-            >
-              <MaterialIcons name="info" size={25} color={Colors[colorScheme].text} style={{ marginRight: 15 }} />
-            </Pressable>
+            <Icon name="info" color={Colors[colorScheme].text} onPress={() => navigation.navigate('Modal')} />
           ),
         })}
       />

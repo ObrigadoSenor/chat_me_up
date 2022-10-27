@@ -16,12 +16,12 @@ export const Container = styled.View`
 
 export default function ConversationScreen({ navigation, route }: RootStackScreenProps<'Conversation'>) {
   const { params } = route || {};
-  const { _messagesId, _conversationId } = params;
+  const { _messagesId, _id } = params;
 
   return (
     <Container>
       <Messages _id={_messagesId} />
-      <SendMessage _conversationId={_conversationId} />
+      <SendMessage _id={_id} />
     </Container>
   );
 }

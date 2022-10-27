@@ -21,7 +21,9 @@ const StartContentText = styled.View`
   ${startContentTextStyles}
 `;
 
-const Item = ({ _id, name, _messagesId }: ConversationType) => {
+const Item = (props: ConversationType) => {
+  const { _id, name, _messagesId } = props || {};
+
   const { members } = useMembers(_id) || {};
   const { messages } = useMessages(_messagesId);
   const latestMessage = head(messages);
@@ -34,9 +36,8 @@ const Item = ({ _id, name, _messagesId }: ConversationType) => {
 
   const onPress = () => {
     navigation.navigate('Conversation', {
-      _messagesId,
       title,
-      _conversationId: _id,
+      ...props,
     });
   };
 

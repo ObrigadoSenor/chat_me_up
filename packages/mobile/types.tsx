@@ -15,15 +15,25 @@ declare global {
   }
 }
 
-export type StackConversationScreenType = {
-  _messagesId: MessagesType['_id'];
-  _conversationId: ConversationType['_id'];
+type ConditionalProps =
+  | {
+      componentName?: never;
+      message?: string;
+      variant?: 'text';
+    }
+  | ({
+      variant?: 'conversation';
+    } & ConversationType);
+
+export type StackModalScreenType = ConditionalProps & {};
+
+export type StackConversationScreenType = ConversationType & {
   title?: JSX.Element[];
 };
 
 export type RootStackParamList = {
   Root: NavigatorScreenParams<RootTabParamList> | undefined;
-  Modal: undefined;
+  Modal: StackModalScreenType | undefined;
   NotFound: undefined;
   Conversation: StackConversationScreenType;
 };

@@ -12,19 +12,20 @@ export const inputContainerStyle = css`
   position: relative;
   display: flex;
   justify-content: center;
-  align-items: flex-start;
-  flex-direction: column;
+  align-items: center;
+  flex-direction: row;
   width: 100%;
   background-color: white;
   border-radius: 5px;
+  height: 44px;
 `;
 
 export const inputStyle = css`
-  width: 100%;
-  padding: 15px;
+  height: 100%;
+  flex: 1;
+  padding: 0 10px;
   border: none;
   box-sizing: border-box;
-  background-color: transparent;
 `;
 
 export const titleStyle = css`

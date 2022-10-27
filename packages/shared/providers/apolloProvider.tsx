@@ -4,6 +4,7 @@ import { getMainDefinition } from '@apollo/client/utilities';
 import { createClient } from 'graphql-ws';
 import { ReactNode } from 'react';
 import { CONVERSATIONS_QUERIES } from '../queries/conversationQueries';
+import { FRIENDS_QUERIES } from '../queries/friendsQueries';
 import { MEMBERS_QUERIES } from '../queries/membersQueries';
 import { MESSAGES_QUERIES } from '../queries/messagesQueries';
 import { USER_QUERIES } from '../queries/userQueries';
@@ -48,7 +49,13 @@ const cache = new InMemoryCache({
   },
 });
 
-const typeDefs = [...CONVERSATIONS_QUERIES, ...MEMBERS_QUERIES, ...MESSAGES_QUERIES, ...USER_QUERIES];
+const typeDefs = [
+  ...CONVERSATIONS_QUERIES,
+  ...MEMBERS_QUERIES,
+  ...MESSAGES_QUERIES,
+  ...USER_QUERIES,
+  ...FRIENDS_QUERIES,
+];
 
 const client = new ApolloClient({
   link,

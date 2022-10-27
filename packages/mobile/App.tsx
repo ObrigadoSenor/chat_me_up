@@ -10,6 +10,9 @@ import icons from '@chat_me_up/shared/icons/globalIcons';
 {
   icons;
 }
+
+export const fakeUserId = '6351ad14b665f50d8f39ecc8';
+
 export default function App() {
   const isLoadingComplete = useCachedResources();
   const colorScheme = useColorScheme();
