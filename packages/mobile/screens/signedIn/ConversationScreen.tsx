@@ -1,9 +1,8 @@
-import { useMessages } from '@chat_me_up/shared/hooks/useMessages';
 import styled from 'styled-components/native';
-import { Messages } from '../components/conversation/messages/messages';
-import SendMessage from '../components/conversation/messages/sendMessage';
+import { Messages } from '../../components/conversation/messages/messages';
+import SendMessage from '../../components/conversation/messages/sendMessage';
 
-import { RootStackScreenProps } from '../types';
+import { RootStackScreenProps } from '../../types';
 
 export const Container = styled.View`
   flex: 1;
@@ -16,12 +15,12 @@ export const Container = styled.View`
 
 export default function ConversationScreen({ navigation, route }: RootStackScreenProps<'Conversation'>) {
   const { params } = route || {};
-  const { _messagesId, _id } = params;
+  const { _messagesId, _id } = params || {};
 
   return (
     <Container>
-      <Messages _id={_messagesId} />
-      <SendMessage _id={_id} />
+      {_messagesId && <Messages _id={_messagesId} />}
+      {_id && <SendMessage _id={_id} />}
     </Container>
   );
 }

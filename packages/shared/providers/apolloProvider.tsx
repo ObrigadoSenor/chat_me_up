@@ -3,6 +3,7 @@ import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
 import { getMainDefinition } from '@apollo/client/utilities';
 import { createClient } from 'graphql-ws';
 import { ReactNode } from 'react';
+import { AUTH_QUERIES } from '../queries/authQueries';
 import { CONVERSATIONS_QUERIES } from '../queries/conversationQueries';
 import { FRIENDS_QUERIES } from '../queries/friendsQueries';
 import { MEMBERS_QUERIES } from '../queries/membersQueries';
@@ -55,6 +56,7 @@ const typeDefs = [
   ...MESSAGES_QUERIES,
   ...USER_QUERIES,
   ...FRIENDS_QUERIES,
+  ...AUTH_QUERIES,
 ];
 
 const client = new ApolloClient({

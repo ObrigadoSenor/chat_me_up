@@ -1,7 +1,7 @@
 /* eslint-disable no-undef */
 import { IconProp } from '@fortawesome/fontawesome-svg-core';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { InputHTMLAttributes, RefObject, useRef } from 'react';
+import { InputHTMLAttributes, useRef } from 'react';
 import styled from 'styled-components';
 
 const Container = styled.div`

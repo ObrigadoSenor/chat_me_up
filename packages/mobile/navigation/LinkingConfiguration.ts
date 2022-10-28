@@ -20,9 +20,19 @@ const linking: LinkingOptions<RootStackParamList> = {
               Conversations: 'one',
             },
           },
-          TabTwo: {
+          Profile: {
             screens: {
-              TabTwoScreen: 'two',
+              Profile: 'two',
+            },
+          },
+          Landing: {
+            screens: {
+              Landing: 'one',
+            },
+          },
+          Auth: {
+            screens: {
+              Auth: 'two',
             },
           },
         },

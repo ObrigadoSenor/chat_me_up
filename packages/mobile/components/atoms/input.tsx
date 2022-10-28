@@ -1,10 +1,9 @@
 /* eslint-disable no-undef */
-import { containerStyle, inputContainerStyle, inputStyle, titleStyle } from '@chat_me_up/shared/styles/atoms/input';
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { containerStyle, inputContainerStyle, inputStyle } from '@chat_me_up/shared/styles/atoms/input';
 
-import { InputHTMLAttributes, useRef, useState } from 'react';
-import { TextInput } from 'react-native';
-import styled, { css } from 'styled-components/native';
+import { useRef, useState } from 'react';
+import { TextInput, TextInputProps } from 'react-native';
+import styled from 'styled-components/native';
 import { Icon, IconProps } from './icon';
 
 const Container = styled.View`
@@ -17,10 +16,6 @@ const InputContainer = styled.View`
 
 const Inp = styled.TextInput<{ icons: { start: boolean; end: boolean } }>`
   ${inputStyle}
-`;
-
-const Title = styled.Text`
-  ${titleStyle}
 `;
 
 const IconStyled = styled(Icon)`
@@ -36,12 +31,12 @@ type InputIconsProps = {
   end?: InputIconProps;
 };
 
-interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
+interface InputProps extends TextInputProps {
   icons?: InputIconsProps;
   clearOnClick?: boolean;
 }
 
-export const Input = ({ icons = {}, title, clearOnClick = true, style, ...props }: InputProps) => {
+export const Input = ({ icons = {}, clearOnClick = true, style, ...props }: InputProps) => {
   const [message, setMessage] = useState('');
   const inputRef = useRef<TextInput>(null);
 
@@ -62,13 +57,11 @@ export const Input = ({ icons = {}, title, clearOnClick = true, style, ...props 
       <InputContainer>
         {startIcon}
 
-        {title ? <Title>{title}</Title> : null}
         <Inp
           icons={{ start: startIcon !== null, end: endIcon !== null }}
-          value={message}
-          {...props}
           ref={inputRef}
           onChangeText={(value: string) => setMessage(value)}
+          {...props}
         />
         {endIcon}
       </InputContainer>

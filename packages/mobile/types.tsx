@@ -4,18 +4,23 @@
  * https://reactnavigation.org/docs/typescript/
  */
 
-import { ConversationType, MessagesType } from '@chat_me_up/shared/generated/serverTypes';
+import { ConversationType } from '@chat_me_up/shared/generated/serverTypes';
 import { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import { CompositeScreenProps, NavigatorScreenParams } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { ColorSchemeName } from 'react-native';
 
 declare global {
   namespace ReactNavigation {
-    interface RootParamList extends RootStackParamList {}
+    interface RootParamList extends RootTabParamList {}
   }
 }
 
-type ConditionalProps =
+export type NavigatorType = {
+  colorScheme: NonNullable<ColorSchemeName>;
+};
+
+type StackModalConditionalProps =
   | {
       componentName?: never;
       message?: string;
@@ -25,30 +30,39 @@ type ConditionalProps =
       variant?: 'conversation';
     } & ConversationType);
 
-export type StackModalScreenType = ConditionalProps & {};
+export type StackModalScreenType = StackModalConditionalProps & {};
 
 export type StackConversationScreenType = ConversationType & {
   title?: JSX.Element[];
 };
 
-export type RootStackParamList = {
-  Root: NavigatorScreenParams<RootTabParamList> | undefined;
-  Modal: StackModalScreenType | undefined;
-  NotFound: undefined;
-  Conversation: StackConversationScreenType;
-};
-
-export type RootStackScreenProps<Screen extends keyof RootStackParamList> = NativeStackScreenProps<
-  RootStackParamList,
-  Screen
->;
-
 export type RootTabParamList = {
+  Landing: undefined;
+  Modal: StackModalScreenType | undefined;
+  Auth: undefined;
+  NotFound: undefined;
   Conversations: undefined;
-  TabTwo: undefined;
+  Conversation: StackConversationScreenType | undefined;
+  Profile: undefined;
 };
 
 export type RootTabScreenProps<Screen extends keyof RootTabParamList> = CompositeScreenProps<
   BottomTabScreenProps<RootTabParamList, Screen>,
-  NativeStackScreenProps<RootStackParamList>
+  NativeStackScreenProps<RootTabParamList>
+>;
+
+export type RootStackParamList = {
+  Root: NavigatorScreenParams<RootTabParamList> | undefined;
+  Modal: StackModalScreenType | undefined;
+  NotFound: undefined;
+  Landing: undefined;
+  Auth: undefined;
+  Conversation: StackConversationScreenType;
+  Conversations: undefined;
+  Profile: undefined;
+};
+
+export type RootStackScreenProps<Screen extends keyof RootTabParamList> = NativeStackScreenProps<
+  RootTabParamList,
+  Screen
 >;

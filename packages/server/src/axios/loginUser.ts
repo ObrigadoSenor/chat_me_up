@@ -1,8 +1,8 @@
-import { UserAddType, UserBasicType } from "../entities/user";
-import axios from "axios";
-import { env } from "process";
-import { print } from "graphql";
-import gql from "graphql-tag";
+import { UserAddType, UserBasicType } from '../entities/user';
+import axios from 'axios';
+import { env } from 'process';
+import { print } from 'graphql';
+import gql from 'graphql-tag';
 
 const LOGIN_USER = gql`
   mutation signUpUser($email: String!, $password: String!) {
@@ -25,10 +25,8 @@ const LOGIN_USER = gql`
   }
 `;
 
-export const loginUser = async (
-  props: Pick<UserAddType, "email" | "password">
-) => {
-  const endpoint = env.AUTH_SERVER_URI || "";
+export const loginUser = async (props: Pick<UserAddType, 'email' | 'password'>) => {
+  const endpoint = env.AUTH_SERVER_URI || '';
 
   const user = await axios
     .post(endpoint, {

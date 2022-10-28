@@ -2,9 +2,9 @@
 import { StatusBar } from 'expo-status-bar';
 import { Platform } from 'react-native';
 import styled from 'styled-components/native';
-import { Settings } from '../components/conversation/item/settings';
+import { Settings } from '../../components/conversation/item/settings';
 
-import { RootStackScreenProps } from '../types';
+import { RootStackScreenProps } from '../../types';
 
 const Container = styled.View`
   flex-direction: column;
