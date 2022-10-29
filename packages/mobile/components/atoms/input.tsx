@@ -14,7 +14,9 @@ const InputContainer = styled.View`
   ${inputContainerStyle}
 `;
 
-const Inp = styled.TextInput<{ icons: { start: boolean; end: boolean } }>`
+const Inp = styled.TextInput.attrs(({ theme }) => ({
+  placeholderTextColor: theme.colors.text.primary,
+}))<{ icons: { start: boolean; end: boolean } }>`
   ${inputStyle}
 `;
 

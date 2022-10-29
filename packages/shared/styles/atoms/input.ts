@@ -15,7 +15,7 @@ export const inputContainerStyle = css`
   align-items: center;
   flex-direction: row;
   width: 100%;
-  background-color: white;
+  background-color: ${({ theme }) => theme.colors.bg.secondary};
   border-radius: 5px;
   height: 44px;
 `;
@@ -26,6 +26,7 @@ export const inputStyle = css`
   padding: 0 10px;
   border: none;
   box-sizing: border-box;
+  color: ${({ theme }) => theme.colors.text.primary};
 `;
 
 export const titleStyle = css`

@@ -1,31 +1,15 @@
-import { StyleSheet } from 'react-native';
+import { Button } from '../../components/atoms/button';
+import { Layout } from '../../components/atoms/layout';
 
-import EditScreenInfo from '../../components/EditScreenInfo';
-import { Text, View } from '../../components/Themed';
+import { useTheme } from '../../hooks/useTheme';
+import { setTheme } from '../../store/slices/system';
 
 export default function LandingScreen() {
+  const { themeType, dispatch } = useTheme();
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Landing screen</Text>
-      <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-      <EditScreenInfo path="/screens/TabTwoScreen.tsx" />
-    </View>
+    <Layout>
+      <Button onPress={() => dispatch(setTheme(themeType === 'dark' ? 'light' : 'dark'))} title={themeType} />
+    </Layout>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: '80%',
-  },
-});

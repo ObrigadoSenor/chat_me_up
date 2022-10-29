@@ -5,29 +5,29 @@ import styled from 'styled-components/native';
 import { Text, TextProps } from './text';
 
 const ButtonContainer = styled.View`
-  background-color: rgba(240, 240, 240, 1);
+  background-color: ${({ theme }) => theme.colors.bg.accent};
   align-items: center;
   justify-content: center;
   align-self: center;
-  width: 60%;
+  width: 100%;
   flex-direction: row;
   border-radius: 5px;
-  padding: 10px;
 `;
 
 const TextStyled = styled(Text)`
   width: 100%;
   justify-content: center;
+  padding: 15px;
 `;
 
 interface ButtonProps extends RNButtonProps, Omit<TextProps, 'children'> {}
 
 export const Button = ({ icons = {}, title, ...props }: ButtonProps) => {
   return (
-    <ButtonContainer>
-      <TouchableOpacity {...props}>
+    <TouchableOpacity {...props}>
+      <ButtonContainer>
         <TextStyled icons={icons}>{title}</TextStyled>
-      </TouchableOpacity>
-    </ButtonContainer>
+      </ButtonContainer>
+    </TouchableOpacity>
   );
 };

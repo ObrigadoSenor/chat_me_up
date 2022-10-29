@@ -7,7 +7,7 @@ export interface IconProps extends ComponentProps<typeof MaterialIcons> {
 }
 
 export const Icon = ({ size = 25, onPress, ...rest }: IconProps) => {
-  const i = <MaterialIcons size={size} {...rest} />;
+  const i = <MaterialIcons size={size} color="red" {...rest} />;
   if (onPress) {
     return (
       <Pressable

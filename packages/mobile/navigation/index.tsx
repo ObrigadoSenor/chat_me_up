@@ -9,11 +9,11 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { DarkTheme, DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import * as React from 'react';
-import { ColorSchemeName, View } from 'react-native';
+import { ColorSchemeName, Platform, View } from 'react-native';
 import styled from 'styled-components/native';
 
 import { map } from 'ramda';
-import { Icon } from '../components/atoms/icon';
+import { Icon, IconProps } from '../components/atoms/icon';
 import { Text } from '../components/atoms/text';
 import Colors from '../constants/Colors';
 import { useAuth } from '../hooks/useAuth';
@@ -28,6 +28,7 @@ import LandingScreen from '../screens/signedOut/LandingScreen';
 import { AuthStateProps } from '../store/slices/auth';
 import { NavigatorType, RootStackParamList, RootTabParamList, RootTabScreenProps } from '../types';
 import LinkingConfiguration from './LinkingConfiguration';
+import { useTheme } from '../hooks/useTheme';
 
 export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeName }) {
   const { signedIn, loading } = useAuth();
@@ -63,7 +64,7 @@ function SignedInNavigator({ colorScheme }: NavigatorType) {
           headerBackVisible: false,
           headerBackTitleVisible: false,
           headerLeft: () => (
-            <Icon name="chevron-left" color={Colors[colorScheme].text} onPress={() => navigation.goBack()} />
+            <HeaderBarIcon name="chevron-left" color={Colors[colorScheme].text} onPress={() => navigation.goBack()} />
           ),
           headerTitle: () => {
             const { title = [] } = route?.params || {};
@@ -71,7 +72,7 @@ function SignedInNavigator({ colorScheme }: NavigatorType) {
             return <TitleContainer>{text}</TitleContainer>;
           },
           headerRight: () => (
-            <Icon
+            <HeaderBarIcon
               name="settings"
               color={Colors[colorScheme].text}
               onPress={() => navigation.navigate('Modal', { variant: 'conversation', ...route?.params })}
@@ -92,11 +93,27 @@ function SignedOutNavigator() {
 }
 
 function DefaultNavigator() {
+  const { theme } = useTheme();
   return (
     <>
       <Stack.Screen name="NotFound" component={NotFoundScreen} options={{ title: 'Oops!' }} />
-      <Stack.Group screenOptions={{ presentation: 'modal' }}>
-        <Stack.Screen name="Modal" component={ModalScreen} />
+      <Stack.Group
+        screenOptions={{
+          presentation: 'modal',
+        }}
+      >
+        <Stack.Screen
+          name="Modal"
+          component={ModalScreen}
+          options={({ navigation, route }: RootTabScreenProps<'Modal'>) => ({
+            headerStyle: {
+              backgroundColor: theme.colors.bg.secondary,
+            },
+            headerTitle: () => {
+              return <Text>{route?.params?.title || 'Modal'}</Text>;
+            },
+          })}
+        />
       </Stack.Group>
     </>
   );
@@ -114,20 +131,24 @@ function RootNavigator({ signedIn }: { signedIn: AuthStateProps['signedIn'] }) {
   );
 }
 
-/**
- * A bottom tab navigator displays tab buttons on the bottom of the display to switch screens.
- * https://reactnavigation.org/docs/bottom-tab-navigator
- */
 const BottomTab = createBottomTabNavigator<RootTabParamList>();
 
 function BottomTabSignedOutNavigator() {
   const colorScheme = useColorScheme();
-
+  const { theme } = useTheme();
   return (
     <BottomTab.Navigator
       initialRouteName="Landing"
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme].tint,
+        tabBarActiveTintColor: theme.colors.text.disabled,
+        tabBarInactiveTintColor: theme.colors.text.accent,
+        tabBarStyle: {
+          backgroundColor: theme.colors.bg.primary,
+          borderTopWidth: 0,
+        },
+        headerStyle: {
+          backgroundColor: theme.colors.bg.primary,
+        },
       }}
     >
       <BottomTab.Screen
@@ -135,9 +156,17 @@ function BottomTabSignedOutNavigator() {
         component={LandingScreen}
         options={({ navigation }: RootTabScreenProps<'Landing'>) => ({
           title: 'Landing',
+          headerTitleStyle: {
+            color: theme.colors.text.primary,
+          },
           tabBarIcon: ({ color }) => <TabBarIcon name="message" color={color} />,
           headerRight: () => (
-            <Icon name="info" color={Colors[colorScheme].text} onPress={() => navigation.navigate('Modal')} />
+            <HeaderBarIcon
+              name="login"
+              onPress={() => {
+                navigation.navigate('Modal', { variant: 'signin', title: 'Sign in' });
+              }}
+            />
           ),
         })}
       />
@@ -148,7 +177,7 @@ function BottomTabSignedOutNavigator() {
           title: 'Auth',
           tabBarIcon: ({ color }) => <TabBarIcon name="message" color={color} />,
           headerRight: () => (
-            <Icon name="info" color={Colors[colorScheme].text} onPress={() => navigation.navigate('Modal')} />
+            <HeaderBarIcon name="info" color={Colors[colorScheme].text} onPress={() => navigation.navigate('Modal')} />
           ),
         })}
       />
@@ -158,12 +187,21 @@ function BottomTabSignedOutNavigator() {
 
 function BottomTabSignedInNavigator() {
   const colorScheme = useColorScheme();
+  const { theme } = useTheme();
 
   return (
     <BottomTab.Navigator
       initialRouteName="Conversations"
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme].tint,
+        tabBarActiveTintColor: theme.colors.text.accent,
+        tabBarInactiveTintColor: theme.colors.text.primary,
+        tabBarStyle: {
+          backgroundColor: theme.colors.bg.primary,
+          borderTopWidth: 0,
+        },
+        headerStyle: {
+          backgroundColor: theme.colors.bg.primary,
+        },
       }}
     >
       <BottomTab.Screen
@@ -173,7 +211,7 @@ function BottomTabSignedInNavigator() {
           title: 'Conversations',
           tabBarIcon: ({ color }) => <TabBarIcon name="message" color={color} />,
           headerRight: () => (
-            <Icon name="info" color={Colors[colorScheme].text} onPress={() => navigation.navigate('Modal')} />
+            <HeaderBarIcon name="info" color={Colors[colorScheme].text} onPress={() => navigation.navigate('Modal')} />
           ),
         })}
       />
@@ -192,6 +230,11 @@ function BottomTabSignedInNavigator() {
 /**
  * You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
  */
-function TabBarIcon(props: { name: React.ComponentProps<typeof MaterialIcons>['name']; color: string }) {
-  return <MaterialIcons size={30} style={{ marginBottom: -3 }} {...props} />;
+function TabBarIcon(props: IconProps) {
+  return <Icon size={30} {...props} />;
+}
+
+function HeaderBarIcon(props: IconProps) {
+  const { theme } = useTheme();
+  return <Icon size={30} color={theme.colors.text.accent} {...props} />;
 }

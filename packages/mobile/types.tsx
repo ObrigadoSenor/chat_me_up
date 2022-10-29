@@ -16,17 +16,23 @@ declare global {
   }
 }
 
+export type TokenType = string | null;
+
 export type NavigatorType = {
   colorScheme: NonNullable<ColorSchemeName>;
 };
 
-type StackModalConditionalProps =
+export type StackModalConditionalProps =
   | {
-      componentName?: never;
-      message?: string;
-      variant?: 'text';
+      title: string;
+      variant?: 'signup';
+    }
+  | {
+      title: string;
+      variant?: 'signin';
     }
   | ({
+      title: string;
       variant?: 'conversation';
     } & ConversationType);
 
