@@ -1,0 +1,13 @@
+{
+  "name": "@chat_me_up/shared",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {},
+  "dependencies": {
+    "@apollo/client": "^3.7.0",
+    "classnames": "^2.3.2"
+  },
+  "devDependencies": {
+    "@babel/runtime": "^7.19.4"
+  }
+}
