@@ -1,6 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable no-undef */
 import { useMutation } from '@apollo/client';
 import { LOGIN_USER } from '@chat_me_up/shared/queries/authQueries';
+import { useNavigation } from '@react-navigation/native';
 import { deleteItemAsync } from 'expo-secure-store';
 import { useState } from 'react';
 import { setUser } from '../../store/slices/auth';
@@ -15,6 +17,7 @@ interface NewUserProps {
 }
 
 export const SignIn = () => {
+  const { navigate } = useNavigation();
   const disaptch = useAppDispatch();
 
   const [username, setUsername] = useState<NewUserProps>({});
@@ -26,6 +29,7 @@ export const SignIn = () => {
       .then(({ data }) => {
         if (data?.loginUser) {
           disaptch(setUser({ ...data?.loginUser }));
+          navigate('Conversations');
         }
       })
       .catch((err) => {

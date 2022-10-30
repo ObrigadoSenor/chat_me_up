@@ -1,19 +1,21 @@
 import { useConversations } from '@chat_me_up/shared/hooks/useConversations';
 import { useMemo } from 'react';
-import styled from 'styled-components/native';
-import { fakeUserId } from '../../App';
+import { Error } from '../../components/atoms/error';
+import { Layout } from '../../components/atoms/layout';
+import { Spinner } from '../../components/atoms/spinner';
 import Item from '../../components/conversation/item/item';
-import { RootTabScreenProps } from '../../types';
+import { useAppSelector } from '../../store/store';
 
-const Container = styled.ScrollView`
-  padding: 20px;
-`;
+export default function ConversationsScreen() {
+  const { user } = useAppSelector(({ auth }) => auth);
 
-export default function ConversationsScreen({ navigation }: RootTabScreenProps<'Conversations'>) {
-  const { conversations, loading, error } = useConversations({ _userId: fakeUserId });
+  const { conversations, loading, error } = useConversations({ _userId: user?._id });
   const renderConversations = useMemo(
     () => conversations.map((props) => <Item key={props._id} {...props} />),
     [conversations],
   );
-  return <Container>{renderConversations}</Container>;
+  if (loading) return <Spinner />;
+  if (error) return <Error error={error} />;
+
+  return <Layout>{renderConversations}</Layout>;
 }

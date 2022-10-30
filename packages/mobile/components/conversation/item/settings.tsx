@@ -4,31 +4,14 @@ import { DELETE_CONVERSATION, UPDATE_NAME_OF_CONVERSATION } from '@chat_me_up/sh
 import { REMOVE_MEMBER } from '@chat_me_up/shared/queries/membersQueries';
 import { includes, map } from 'ramda';
 import { useMemo } from 'react';
-import styled from 'styled-components/native';
-import { fakeUserId } from '../../../App';
+import { useAppSelector } from '../../../store/store';
+import { Button } from '../../atoms/button';
 import { Input } from '../../atoms/input';
-import { Text } from '../../atoms/text';
+import { Layout } from '../../atoms/layout';
 import { Members } from '../members/members';
 
-const Container = styled.View`
-  flex-direction: column;
-  flex: 1;
-  padding: 20px;
-`;
-
-const ChangeName = styled(Input)`
-  margin-bottom: 20px;
-`;
-
-const DeleteLeave = styled(Text)`
-  margin-top: 10px;
-  padding: 10px;
-  border-radius: 5px;
-  width: 100%;
-  background-color: rgb(146, 54, 54);
-`;
-
-export const Settings = ({ _id, name, _adminsIds = [], ...rest }: ConversationType) => {
+export const Settings = ({ _id, name, _adminsIds = [] }: ConversationType) => {
+  const { user } = useAppSelector(({ auth }) => auth);
   const [deleteConversation] = useMutation(DELETE_CONVERSATION);
   const [removeMember] = useMutation(REMOVE_MEMBER);
   const [updateNameOfConversation] = useMutation(UPDATE_NAME_OF_CONVERSATION);
@@ -40,7 +23,7 @@ export const Settings = ({ _id, name, _adminsIds = [], ...rest }: ConversationTy
   };
 
   const handleLeave = async () => {
-    await removeMember({ variables: { _userId: fakeUserId, _conversationId: _id } })
+    await removeMember({ variables: { _userId: user?._id, _conversationId: _id } })
       .then(() => {})
       .catch((err) => console.log('err', err));
   };
@@ -54,14 +37,14 @@ export const Settings = ({ _id, name, _adminsIds = [], ...rest }: ConversationTy
   const isAdmin = useMemo(
     () =>
       includes(
-        fakeUserId,
+        user?._id,
         map(({ _adminId }) => _adminId, _adminsIds),
       ),
     [_adminsIds],
   );
   return (
-    <Container>
-      <ChangeName
+    <Layout>
+      <Input
         placeholder="Conversation name"
         defaultValue={name || ''}
         icons={{
@@ -72,17 +55,15 @@ export const Settings = ({ _id, name, _adminsIds = [], ...rest }: ConversationTy
         }}
       />
       <Members _id={_id} />
-      <DeleteLeave
-        color="white"
+      <Button
+        title={isAdmin ? 'Delete conversation' : 'Leave conversation'}
         icons={{
           start: {
             name: isAdmin ? 'remove-circle' : 'exit-to-app',
             onPress: () => (isAdmin ? handleDelete() : handleLeave()),
           },
         }}
-      >
-        {isAdmin ? 'Delete conversation' : 'Leave conversation'}
-      </DeleteLeave>
-    </Container>
+      />
+    </Layout>
   );
 };

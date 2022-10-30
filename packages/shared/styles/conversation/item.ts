@@ -20,7 +20,7 @@ export const startContentTextStyles = css`
   box-sizing: border-box;
   margin: 0 10px 0 20px;
   padding-bottom: 5px;
-  border-bottom-color: rgba(30, 30, 30, 0.15);
+  border-bottom-color: ${({ theme }) => theme.colors.text.disabled};
   border-bottom-width: 1px;
   flex: 1;
 `;

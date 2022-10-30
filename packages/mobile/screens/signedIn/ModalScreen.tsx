@@ -9,7 +9,7 @@ import { Settings } from '../../components/conversation/item/settings';
 
 import { RootStackScreenProps } from '../../types';
 
-export default function ModalScreen({ route, navigation }: RootStackScreenProps<'Modal'>) {
+export default function ModalScreen({ route }: RootStackScreenProps<'Modal'>) {
   const { params } = route || {};
 
   let component = null;

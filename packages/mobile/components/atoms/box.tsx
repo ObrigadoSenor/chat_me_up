@@ -6,17 +6,11 @@ const Container = styled.View`
   display: flex;
   flex-direction: column;
   width: 100%;
-  padding: 20px;
+  padding: ${({ theme }) => theme.spacings.l};
   box-sizing: border-box;
-  border-radius: 5px;
-  background-color: rgba(5, 5, 5, 0.15);
-  margin-bottom: 20px;
-`;
-
-const StyledText = styled(Text)`
-  padding: 10px 0 20px 0;
-  width: 100%;
-  justify-content: center;
+  border-radius: ${({ theme }) => theme.borderRadius.m};
+  background-color: ${({ theme }) => theme.colors.bg.secondary};
+  margin-bottom: ${({ theme }) => theme.spacings.l};
 `;
 
 interface BoxProps {
@@ -27,7 +21,7 @@ interface BoxProps {
 export const Box = ({ children, text }: BoxProps) => {
   return (
     <Container>
-      {text ? <StyledText {...text} size={16} /> : null}
+      {text ? <Text {...text} size="l" /> : null}
       {children}
     </Container>
   );

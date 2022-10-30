@@ -1,36 +1,26 @@
-/**
- * If you are not familiar with React Navigation, refer to the "Fundamentals" guide:
- * https://reactnavigation.org/docs/getting-started
- *
- */
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { DarkTheme, DefaultTheme, NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import * as React from 'react';
-import { ColorSchemeName, Platform, View } from 'react-native';
+import { View } from 'react-native';
 import styled from 'styled-components/native';
 
 import { map } from 'ramda';
 import { Icon, IconProps } from '../components/atoms/icon';
 import { Text } from '../components/atoms/text';
-import Colors from '../constants/Colors';
 import { useAuth } from '../hooks/useAuth';
-import useColorScheme from '../hooks/useColorScheme';
+import { useTheme } from '../hooks/useTheme';
 import NotFoundScreen from '../screens/NotFoundScreen';
 import ConversationScreen from '../screens/signedIn/ConversationScreen';
 import ConversationsScreen from '../screens/signedIn/ConversationsScreen';
 import ModalScreen from '../screens/signedIn/ModalScreen';
 import ProfileScreen from '../screens/signedIn/ProfileScreen';
-import AuthScreen from '../screens/signedOut/AuthScreen';
 import LandingScreen from '../screens/signedOut/LandingScreen';
 import { AuthStateProps } from '../store/slices/auth';
-import { NavigatorType, RootStackParamList, RootTabParamList, RootTabScreenProps } from '../types';
+import { RootStackParamList, RootTabParamList, RootTabScreenProps } from '../types';
 import LinkingConfiguration from './LinkingConfiguration';
-import { useTheme } from '../hooks/useTheme';
 
-export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeName }) {
+export default function Navigation() {
   const { signedIn, loading } = useAuth();
 
   if (loading) {
@@ -42,7 +32,7 @@ export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeNa
   }
 
   return (
-    <NavigationContainer linking={LinkingConfiguration} theme={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    <NavigationContainer linking={LinkingConfiguration}>
       <RootNavigator signedIn={signedIn} />
     </NavigationContainer>
   );
@@ -53,7 +43,8 @@ const Title = styled.Text``;
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
-function SignedInNavigator({ colorScheme }: NavigatorType) {
+function SignedInNavigator() {
+  const { theme } = useTheme();
   return (
     <>
       <Stack.Screen name="Root" component={BottomTabSignedInNavigator} options={{ headerShown: false }} />
@@ -63,9 +54,11 @@ function SignedInNavigator({ colorScheme }: NavigatorType) {
         options={({ navigation, route }) => ({
           headerBackVisible: false,
           headerBackTitleVisible: false,
-          headerLeft: () => (
-            <HeaderBarIcon name="chevron-left" color={Colors[colorScheme].text} onPress={() => navigation.goBack()} />
-          ),
+          headerStyle: {
+            color: theme.colors.text.primary,
+            backgroundColor: theme.colors.bg.primary,
+          },
+          headerLeft: () => <HeaderBarIcon name="chevron-left" onPress={() => navigation.goBack()} />,
           headerTitle: () => {
             const { title = [] } = route?.params || {};
             const text = map((t) => <Title>{t}</Title>, title);
@@ -74,7 +67,6 @@ function SignedInNavigator({ colorScheme }: NavigatorType) {
           headerRight: () => (
             <HeaderBarIcon
               name="settings"
-              color={Colors[colorScheme].text}
               onPress={() => navigation.navigate('Modal', { variant: 'conversation', ...route?.params })}
             />
           ),
@@ -105,9 +97,9 @@ function DefaultNavigator() {
         <Stack.Screen
           name="Modal"
           component={ModalScreen}
-          options={({ navigation, route }: RootTabScreenProps<'Modal'>) => ({
+          options={({ route }: RootTabScreenProps<'Modal'>) => ({
             headerStyle: {
-              backgroundColor: theme.colors.bg.secondary,
+              backgroundColor: theme.colors.bg.modal,
             },
             headerTitle: () => {
               return <Text>{route?.params?.title || 'Modal'}</Text>;
@@ -120,11 +112,10 @@ function DefaultNavigator() {
 }
 
 function RootNavigator({ signedIn }: { signedIn: AuthStateProps['signedIn'] }) {
-  const colorScheme = useColorScheme();
   return (
     <Stack.Navigator>
       <>
-        {signedIn ? SignedInNavigator({ colorScheme }) : SignedOutNavigator()}
+        {signedIn ? SignedInNavigator() : SignedOutNavigator()}
         <Stack.Group navigationKey={signedIn ? 'user' : 'guest'}>{DefaultNavigator()}</Stack.Group>
       </>
     </Stack.Navigator>
@@ -134,7 +125,6 @@ function RootNavigator({ signedIn }: { signedIn: AuthStateProps['signedIn'] }) {
 const BottomTab = createBottomTabNavigator<RootTabParamList>();
 
 function BottomTabSignedOutNavigator() {
-  const colorScheme = useColorScheme();
   const { theme } = useTheme();
   return (
     <BottomTab.Navigator
@@ -170,23 +160,11 @@ function BottomTabSignedOutNavigator() {
           ),
         })}
       />
-      <BottomTab.Screen
-        name="Auth"
-        component={AuthScreen}
-        options={({ navigation }: RootTabScreenProps<'Auth'>) => ({
-          title: 'Auth',
-          tabBarIcon: ({ color }) => <TabBarIcon name="message" color={color} />,
-          headerRight: () => (
-            <HeaderBarIcon name="info" color={Colors[colorScheme].text} onPress={() => navigation.navigate('Modal')} />
-          ),
-        })}
-      />
     </BottomTab.Navigator>
   );
 }
 
 function BottomTabSignedInNavigator() {
-  const colorScheme = useColorScheme();
   const { theme } = useTheme();
 
   return (
@@ -209,10 +187,11 @@ function BottomTabSignedInNavigator() {
         component={ConversationsScreen}
         options={({ navigation }: RootTabScreenProps<'Conversations'>) => ({
           title: 'Conversations',
+          headerTitleStyle: {
+            color: theme.colors.text.primary,
+          },
           tabBarIcon: ({ color }) => <TabBarIcon name="message" color={color} />,
-          headerRight: () => (
-            <HeaderBarIcon name="info" color={Colors[colorScheme].text} onPress={() => navigation.navigate('Modal')} />
-          ),
+          headerRight: () => <HeaderBarIcon name="info" onPress={() => navigation.navigate('Modal')} />,
         })}
       />
       <BottomTab.Screen
@@ -220,16 +199,13 @@ function BottomTabSignedInNavigator() {
         component={ProfileScreen}
         options={{
           title: 'Profile',
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+          tabBarIcon: ({ color }) => <TabBarIcon name="account-box" color={color} />,
         }}
       />
     </BottomTab.Navigator>
   );
 }
 
-/**
- * You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
- */
 function TabBarIcon(props: IconProps) {
   return <Icon size={30} {...props} />;
 }

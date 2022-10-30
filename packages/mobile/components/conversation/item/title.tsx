@@ -1,6 +1,7 @@
 import styled from 'styled-components/native';
 import { useUser } from '@chat_me_up/shared/hooks/useUser';
 import { UserType } from '@chat_me_up/shared/generated/serverTypes';
+import { Text } from '../../atoms/text';
 
 const TitleContainer = styled.View`
   &:not(:last-of-type):after {
@@ -8,10 +9,6 @@ const TitleContainer = styled.View`
     margin-left: 0.25rem;
     margin-right: 0.25rem;
   }
-`;
-
-const Text = styled.Text`
-  font-size: 0.85rem;
 `;
 
 interface ConversationsTitleProps {
@@ -23,7 +20,7 @@ export const Title = ({ _userId }: ConversationsTitleProps) => {
 
   return (
     <TitleContainer>
-      <Text>{name}</Text>
+      <Text size="l">{name}</Text>
     </TitleContainer>
   );
 };

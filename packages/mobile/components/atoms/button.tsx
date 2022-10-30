@@ -17,10 +17,10 @@ const ButtonContainer = styled.View`
 const TextStyled = styled(Text)`
   width: 100%;
   justify-content: center;
-  padding: 15px;
+  padding: ${({ theme }) => theme.spacings.s};
 `;
 
-interface ButtonProps extends RNButtonProps, Omit<TextProps, 'children'> {}
+interface ButtonProps extends Omit<RNButtonProps, 'color'>, Omit<TextProps, 'children'> {}
 
 export const Button = ({ icons = {}, title, ...props }: ButtonProps) => {
   return (

@@ -1,13 +1,14 @@
 /* eslint-disable no-undef */
 import { containerStyle, inputContainerStyle, inputStyle } from '@chat_me_up/shared/styles/atoms/input';
 
-import { useRef, useState } from 'react';
-import { TextInput, TextInputProps } from 'react-native';
+import { useState } from 'react';
+import { TextInputProps } from 'react-native';
 import styled from 'styled-components/native';
 import { Icon, IconProps } from './icon';
 
 const Container = styled.View`
   ${containerStyle}
+  margin-bottom: ${({ theme }) => theme.spacings.l};
 `;
 
 const InputContainer = styled.View`
@@ -40,13 +41,12 @@ interface InputProps extends TextInputProps {
 
 export const Input = ({ icons = {}, clearOnClick = true, style, ...props }: InputProps) => {
   const [message, setMessage] = useState('');
-  const inputRef = useRef<TextInput>(null);
 
   const { start, end } = icons || {};
 
   const onHandleClick = (onPress: InputIconProps['onPress']) => {
     onPress(message);
-    if (clearOnClick && message !== '') {
+    if (clearOnClick) {
       setMessage('');
     }
   };
@@ -60,8 +60,8 @@ export const Input = ({ icons = {}, clearOnClick = true, style, ...props }: Inpu
         {startIcon}
 
         <Inp
+          value={message}
           icons={{ start: startIcon !== null, end: endIcon !== null }}
-          ref={inputRef}
           onChangeText={(value: string) => setMessage(value)}
           {...props}
         />

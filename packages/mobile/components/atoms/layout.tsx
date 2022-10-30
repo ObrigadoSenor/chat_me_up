@@ -13,7 +13,7 @@ const Container = styled.View<{ bgVariant: LayoutProps['bgVariant'] }>`
 `;
 
 interface LayoutProps {
-  children: JSX.Element | JSX.Element[];
+  children: JSX.Element | JSX.Element[] | (JSX.Element | null)[] | null;
   bgVariant?: keyof SharedThemeBgProps;
 }
 

@@ -2,49 +2,61 @@ import { MessageType } from '@chat_me_up/shared/generated/serverTypes';
 import { useUser } from '@chat_me_up/shared/hooks/useUser';
 import dayjs from 'dayjs';
 import styled from 'styled-components/native';
+import { useAppSelector } from '../../../store/store';
+import { Text } from '../../atoms/text';
 
 interface MessageProps extends MessageType {
-  self: boolean;
   showTime: boolean;
 }
 
-const Container = styled.View<Pick<MessageProps, 'self'>>`
+type SelfProps = {
+  self: boolean;
+};
+
+const Container = styled.View<SelfProps>`
   display: flex;
   flex-direction: column;
-  align-self: ${({ self }) => (self ? 'flex-end' : 'flex-start')};
   max-width: 65%;
   margin-bottom: 10px;
   border-radius: 10px;
-  padding: 10px 20px;
-  color: rgb(245, 245, 245);
-  background-color: ${({ self }) => `rgba(${self ? '40, 40, 40, 0.75' : '10, 10, 10, 0.75'})`};
+  padding: 10px 15px;
+  ${({ self, theme }) =>
+    self
+      ? `
+  align-self: flex-end;
+  border-color: ${theme.colors.bg.secondary};
+  border-width: 1px;
+  background-color: ${theme.colors.bg.primary};
+  `
+      : `
+  align-self: flex-start;
+  background-color: ${theme.colors.bg.secondary};
+  `};
 `;
 
-const ContentContainer = styled.View<Pick<MessageProps, 'self'>>`
+const ContentContainer = styled.View<SelfProps>`
   text-align: ${({ self }) => (self ? 'end' : 'start')};
 `;
 
-const Name = styled.Text`
-  font-size: 12px;
-`;
-
-const Text = styled.Text``;
-
-const Time = styled.Text<Pick<MessageProps, 'self'>>`
-  font-size: 12px;
+const Time = styled(Text)<SelfProps>`
   align-self: ${({ self }) => (self ? 'flex-end' : 'flex-start')};
 `;
 
-export const Message = ({ _userId, message, createdAt, self, showTime }: MessageProps) => {
+export const Message = ({ _userId, message, createdAt, showTime }: MessageProps) => {
+  const { user } = useAppSelector(({ auth }) => auth);
   const { name } = useUser(_userId);
   const time = createdAt ? dayjs(createdAt).format('H:mm') : null;
-
+  const self = _userId === user?._id;
   return (
     <Container self={self}>
-      {!self && <Name>{name}</Name>}
+      {!self && <Text size="xs">{name}</Text>}
       <ContentContainer self={self}>
         <Text>{message}</Text>
-        {showTime && <Time self={self}>{time}</Time>}
+        {showTime && time ? (
+          <Time self={self} size="xs">
+            {time}
+          </Time>
+        ) : null}
       </ContentContainer>
     </Container>
   );

@@ -6,7 +6,8 @@ import { ADD_MEMBER } from '@chat_me_up/shared/queries/membersQueries';
 import { filter, isEmpty, map } from 'ramda';
 import { useMemo, useState } from 'react';
 import styled from 'styled-components/native';
-import { fakeUserId } from '../../../App';
+import { useAppSelector } from '../../../store/store';
+import { Button } from '../../atoms/button';
 import { Text } from '../../atoms/text';
 import { Member } from './member';
 
@@ -16,30 +17,25 @@ const MembersContainer = styled.View`
   justify-content: center;
   flex-direction: column;
   width: 100%;
-  margin-top: 10px;
+  margin-top: ${({ theme }) => theme.spacings.m};
 `;
 
 const AddMemberText = styled(Text)<{ open: boolean }>`
   display: flex;
   flex-direction: row;
   width: 100%;
-  padding: 10px;
-
+  padding: ${({ theme }) => theme.spacings.m};
   box-sizing: border-box;
-  border-radius: 5px;
-  background-color: ${({ open }) => (open ? 'rgba(5, 5, 5, 0.15)' : 'transparent')};
-  border-bottom-right-radius: ${({ open }) => (open ? '0' : '5px')};
-  border-bottom-left-radius: ${({ open }) => (open ? '0' : '5px')};
 `;
 
 const FriendList = styled.ScrollView`
   display: flex;
   flex-direction: column;
   width: 100%;
-  padding: 10px;
+  padding: ${({ theme }) => theme.spacings.m};
   box-sizing: border-box;
-  border-bottom-right-radius: 5px;
-  border-bottom-left-radius: 5px;
+  border-bottom-right-radius: ${({ theme }) => theme.borderRadius.m};
+  border-bottom-left-radius: ${({ theme }) => theme.borderRadius.m};
   background-color: rgba(5, 5, 5, 0.15);
 `;
 
@@ -48,7 +44,9 @@ interface AddMembersProps extends Pick<ConversationBasicType, '_conversationId'>
 }
 
 export const AddMembers = ({ _conversationId, members }: AddMembersProps) => {
-  const { accepted } = useFriends(fakeUserId);
+  const { user } = useAppSelector(({ auth }) => auth);
+
+  const { accepted } = useFriends(user?._id);
   const [open, setOpen] = useState<boolean>(false);
   const [addMember] = useMutation(ADD_MEMBER);
 
@@ -75,9 +73,7 @@ export const AddMembers = ({ _conversationId, members }: AddMembersProps) => {
 
   return (
     <MembersContainer>
-      <AddMemberText open={open} icons={{ start: { name: 'add-box', onPress: () => setOpen(!open) } }}>
-        Add member
-      </AddMemberText>
+      <Button title="Add member" icons={{ start: { name: 'add-box', onPress: () => setOpen(!open) } }} />
       {open ? <FriendList>{friendsList}</FriendList> : null}
     </MembersContainer>
   );

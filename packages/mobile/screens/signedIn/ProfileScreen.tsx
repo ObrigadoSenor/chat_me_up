@@ -1,32 +1,18 @@
-import { StyleSheet } from 'react-native';
 import { Button } from '../../components/atoms/button';
 
-import { View } from '../../components/Themed';
-import { useAppDispatch } from '../../store/store';
+import { Layout } from '../../components/atoms/layout';
+import { useTheme } from '../../hooks/useTheme';
 import { signOut } from '../../store/slices/auth';
+import { setTheme } from '../../store/slices/system';
+import { useAppDispatch } from '../../store/store';
 
 export default function ProfileScreen() {
   const dispatch = useAppDispatch();
+  const { themeType } = useTheme();
   return (
-    <View style={styles.container}>
+    <Layout>
       <Button title="Sign out" onPress={() => dispatch(signOut())} />
-    </View>
+      <Button onPress={() => dispatch(setTheme(themeType === 'dark' ? 'light' : 'dark'))} title={themeType} />
+    </Layout>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: '80%',
-  },
-});

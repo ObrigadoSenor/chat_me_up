@@ -11,7 +11,7 @@ import { MEMBER_REMOVE_SUBSCRIPTION } from '../queries/membersQueries';
 import { ConversationType, UserType } from '../generated/serverTypes';
 
 interface UseConversationsProps {
-  _userId: UserType['_id'];
+  _userId?: UserType['_id'];
 }
 
 export const useConversations = ({ _userId }: UseConversationsProps) => {
